@@ -91,6 +91,10 @@ import { cn } from "@/lib/utils"
 - Dark mode obsługiwany przez zmienne CSS
 - Używaj Tailwind semantic color tokens (np. `bg-primary`, `text-foreground`)
 
+## Code Style
+
+- Nie dodawaj komentarzy do kodu, chyba że użytkownik o to poprosi.
+
 ## Dev Commands
 
 ```bash
