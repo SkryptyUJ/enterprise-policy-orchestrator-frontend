@@ -1,5 +1,8 @@
+"use client"
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { fetchPolicies, createPolicy } from "../api"
+import { fetchPolicies, fetchPoliciesByUser, createPolicy } from "../api"
+import { useApiClient } from "@/lib/useApiClient"
 import { useAuth } from "@/features/auth/hooks/useAuth"
 
 export const policyKeys = {
@@ -9,41 +12,34 @@ export const policyKeys = {
 }
 
 export function usePolicies() {
+    const client = useApiClient()
+
     return useQuery({
         queryKey: policyKeys.all,
-        queryFn: async () => {
-            // const token = await getAccessTokenSilently()
-            const token = "placeholder-token"
-            return fetchPolicies(token)
-        },
+        queryFn: () => fetchPolicies(client),
     })
 }
 
 export function usePoliciesByUser() {
+    const client = useApiClient()
     const { user } = useAuth()
 
     return useQuery({
         queryKey: policyKeys.byUser(user?.id ?? ""),
-        queryFn: async () => {
-            if (!user) throw new Error("Brak zalogowanego użytkownika")
-            // const token = await getAccessTokenSilently()
-            const token = "placeholder-token"
-            return fetchPolicies(token)
-        },
+        queryFn: () => fetchPoliciesByUser(client, user!.id),
         enabled: !!user,
     })
 }
 
 export function useCreatePolicy() {
     const queryClient = useQueryClient()
+    const client = useApiClient()
     const { user } = useAuth()
 
     return useMutation({
-        mutationFn: async (data: { title: string; description: string }) => {
+        mutationFn: (data: { title: string; description: string }) => {
             if (!user) throw new Error("Brak zalogowanego użytkownika")
-            // const token = await getAccessTokenSilently()
-            const token = "placeholder-token"
-            return createPolicy(data, token, user)
+            return createPolicy(client, data, user)
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: policyKeys.all })

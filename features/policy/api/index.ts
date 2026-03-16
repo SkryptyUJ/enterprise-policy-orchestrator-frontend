@@ -1,4 +1,7 @@
+import type { createApiClient } from "@/lib/apiClient"
 import type { AuthUser } from "@/features/auth/hooks/useAuth"
+
+type ApiClient = ReturnType<typeof createApiClient>
 
 export interface Policy {
     id: string
@@ -12,46 +15,18 @@ export interface CreatePolicyDto {
     description: string
 }
 
-export async function fetchPolicies(token: string): Promise<Policy[]> {
-    const res = await fetch("/api/policies", {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    })
-    if (!res.ok) throw new Error("Nie udało się pobrać polityk")
-    return res.json()
+export function fetchPolicies(client: ApiClient) {
+    return client.get<Policy[]>("/api/policies")
 }
 
-export async function createPolicy(
-    data: CreatePolicyDto,
-    token: string,
-    user: AuthUser
-): Promise<Policy> {
-    const res = await fetch("/api/policies", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-            ...data,
-            createdBy: user.id,
-            createdByRole: user.role,
-        }),
-    })
-    if (!res.ok) throw new Error("Nie udało się utworzyć polityki")
-    return res.json()
+export function fetchPoliciesByUser(client: ApiClient, userId: string) {
+    return client.get<Policy[]>(`/api/policies?userId=${userId}`)
 }
 
-export async function fetchPoliciesByUser(
-    userId: string,
-    token: string
-): Promise<Policy[]> {
-    const res = await fetch(`/api/policies?userId=${userId}`, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
+export function createPolicy(client: ApiClient, data: CreatePolicyDto, user: AuthUser) {
+    return client.post<Policy>("/api/policies", {
+        ...data,
+        createdBy: user.id,
+        createdByRole: user.role,
     })
-    if (!res.ok) throw new Error("Nie udało się pobrać polityk użytkownika")
-    return res.json()
 }

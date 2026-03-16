@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
-const PUBLIC_PATHS = ["/login"]
+const PUBLIC_PATHS = ["/"]
 const PROTECTED_PATHS = ["/dashboard", "/policy"]
 
 export function proxy(request: NextRequest) {
@@ -16,12 +16,12 @@ export function proxy(request: NextRequest) {
 
     // // Niezalogowany → chroniona strona: redirect na /login
     // if (!isAuthenticated && isProtectedPath) {
-    //     const loginUrl = new URL("/login", request.url)
+    //     const loginUrl = new URL("/", request.url)
     //     loginUrl.searchParams.set("returnTo", pathname)
     //     return NextResponse.redirect(loginUrl)
     // }
 
-    // // Zalogowany → /login: redirect na /dashboard
+    // // Zalogowany → /: redirect na /dashboard
     // if (isAuthenticated && isPublicPath) {
     //     return NextResponse.redirect(new URL("/dashboard", request.url))
     // }
