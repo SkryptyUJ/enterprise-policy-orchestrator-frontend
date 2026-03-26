@@ -10,9 +10,14 @@ export default function DashboardPage() {
         <div className="p-6 flex flex-col gap-4">
             <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
-                <Button asChild>
-                    <Link href="/policy/new">Nowa polityka</Link>
-                </Button>
+                <div className="flex gap-2">
+                    <Button asChild>
+                        <Link href="/expense-request/new">Nowy wniosek wydatkowy</Link>
+                    </Button>
+                    <Button asChild variant="outline">
+                        <Link href="/policy/new">Nowa polityka</Link>
+                    </Button>
+                </div>
             </div>
         </div>
     )
