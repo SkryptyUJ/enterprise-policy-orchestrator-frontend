@@ -37,7 +37,7 @@ export function useCreatePolicy() {
     const { user } = useAuth()
 
     return useMutation({
-        mutationFn: (data: { title: string; description: string }) => {
+        mutationFn: (data: { name: string; description?: string }) => {
             if (!user) throw new Error("Brak zalogowanego użytkownika")
             return createPolicy(client, data, user)
         },
