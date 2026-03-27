@@ -4,15 +4,17 @@ import type { AuthUser } from "@/features/auth/hooks/useAuth"
 type ApiClient = ReturnType<typeof createApiClient>
 
 export interface Policy {
-    id: string
-    title: string
-    status: "active" | "inactive" | "draft"
+    id: number
+    name: string
+    description: string | null
+    version: number
     createdAt: string
+    updatedAt: string
 }
 
 export interface CreatePolicyDto {
-    title: string
-    description: string
+    name: string
+    description?: string
 }
 
 export function fetchPolicies(client: ApiClient) {

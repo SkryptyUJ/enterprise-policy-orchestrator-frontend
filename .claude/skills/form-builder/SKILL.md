@@ -21,11 +21,12 @@ Projekt ma gotowe generyczne komponenty w `components/shared/`:
 
 - `InputField` — dla wszystkich pól tekstowych, numerycznych, date, password itp.
 - `SelectField` — dla pól select z listą opcji
+- `TextareaField` — dla pól wieloliniowych (TEXT w bazie)
 
-Oba używają `useFormContext()` — działają tylko wewnątrz `<Form>`.
+Wszystkie używają `useFormContext()` — działają tylko wewnątrz `<Form>`.
 
 ```tsx
-import { InputField, SelectField } from "@/components/shared"
+import { InputField, SelectField, TextareaField } from "@/components/shared"
 ```
 
 ### InputField — props
