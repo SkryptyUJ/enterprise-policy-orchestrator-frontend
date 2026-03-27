@@ -1,32 +1,28 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
+import { auth0 } from "./lib/auth0";
+
 const PUBLIC_PATHS = ["/"]
 const PROTECTED_PATHS = ["/dashboard", "/policy"]
 
-export function proxy(request: NextRequest) {
-    // const { pathname } = request.nextUrl
+export async function proxy(request: NextRequest) {
+    const session = await auth0.getSession(request);
+    const { pathname } = request.nextUrl;
 
-    // // TODO: Po instalacji @auth0/nextjs-auth0 zastąp sprawdzanie cookie
-    // // rzeczywistą weryfikacją sesji Auth0
-    // const isAuthenticated = request.cookies.has("appSession")
+    const isAuthenticated = !!session;
 
-    // const isPublicPath = PUBLIC_PATHS.some((p) => pathname.startsWith(p))
-    // const isProtectedPath = PROTECTED_PATHS.some((p) => pathname.startsWith(p))
+    if (isAuthenticated && pathname === "/") {
+        return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
 
-    // // Niezalogowany → chroniona strona: redirect na /login
-    // if (!isAuthenticated && isProtectedPath) {
-    //     const loginUrl = new URL("/", request.url)
-    //     loginUrl.searchParams.set("returnTo", pathname)
-    //     return NextResponse.redirect(loginUrl)
-    // }
+    const isProtectedPath = PROTECTED_PATHS.some((p) => pathname.startsWith(p));
 
-    // // Zalogowany → /: redirect na /dashboard
-    // if (isAuthenticated && isPublicPath) {
-    //     return NextResponse.redirect(new URL("/dashboard", request.url))
-    // }
+    if (!isAuthenticated && isProtectedPath) {
+        return NextResponse.redirect(new URL("/", request.url));
+    }
 
-    return NextResponse.next()
+    return await auth0.middleware(request);
 }
 
 export const config = {
