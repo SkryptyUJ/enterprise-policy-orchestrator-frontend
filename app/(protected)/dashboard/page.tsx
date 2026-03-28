@@ -13,9 +13,12 @@ export default function DashboardPage() {
                 <div className="flex gap-2">
                     <Button asChild>
                         <Link href="/expense-request/new">Nowy wniosek wydatkowy</Link>
-                    </Button>
-                    <Button asChild variant="outline">
+                    </Button> 
+                    <Button asChild>
                         <Link href="/policy/new">Nowa polityka</Link>
+                    </Button>
+                    <Button asChild>
+                        <Link href="/auth/logout">Wyloguj</Link>
                     </Button>
                 </div>
             </div>
