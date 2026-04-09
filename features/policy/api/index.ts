@@ -1,5 +1,4 @@
 import type { createApiClient } from "@/lib/apiClient"
-import type { AuthUser } from "@/features/auth/hooks/useAuth"
 
 type ApiClient = ReturnType<typeof createApiClient>
 
@@ -44,4 +43,12 @@ export function fetchPoliciesByUser(client: ApiClient, userId: string) {
 
 export function createPolicy(client: ApiClient, data: CreatePolicyDto, userId: number) {
     return client.post<Policy>(`/api/users/${userId}/policies`, data)
+}
+
+export function getPolicyById(client: ApiClient, userId: number, policyId: number) {
+    return client.get<Policy>(`/api/users/${userId}/policies/${policyId}`)
+}
+
+export function updatePolicy(client: ApiClient, data: CreatePolicyDto, userId: number, policyId: number) {
+    return client.put<Policy>(`/api/users/${userId}/policies/${policyId}`, data)
 }
