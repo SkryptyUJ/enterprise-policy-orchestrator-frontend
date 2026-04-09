@@ -3,6 +3,7 @@ import { Inter } from "next/font/google"
 import "./globals.css"
 import TanstackQueryProvider from "@/providers/tanstackQuery"
 import { Toaster } from "@/components/ui/sonner"
+import { Auth0Provider } from '@auth0/nextjs-auth0/client'
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -18,7 +19,11 @@ export default function RootLayout({
     return (
         <html lang="pl">
             <body className={inter.className}>
-                <TanstackQueryProvider>{children}</TanstackQueryProvider>
+                <TanstackQueryProvider>
+                    <Auth0Provider>
+                        {children}
+                    </Auth0Provider>
+                </TanstackQueryProvider>
                 <Toaster position="top-right" richColors />
             </body>
         </html>
