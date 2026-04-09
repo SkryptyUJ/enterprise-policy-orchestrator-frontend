@@ -37,9 +37,21 @@ export function useCreatePolicy() {
     const { user } = useAuth()
 
     return useMutation({
-        mutationFn: (data: { name: string; description?: string }) => {
+        mutationFn: (data: import("../api").CreatePolicyDto) => {
             if (!user) throw new Error("Brak zalogowanego użytkownika")
-            return createPolicy(client, data, user)
+            
+            // Ekstrakcja liczbowego ID z usera i zredukowanie długości do 8 cyfr 
+            // by zmieścić się w limicie Javy dla typu Long (max ~9.22 * 10^18)
+            let userId = 1
+            if (user.id) {
+                const match = user.id.match(/\d+$/)
+                if (match) {
+                    const digits = match[0].slice(-8)
+                    userId = parseInt(digits, 10)
+                }
+            }
+            
+            return createPolicy(client, data, userId)
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: policyKeys.all })

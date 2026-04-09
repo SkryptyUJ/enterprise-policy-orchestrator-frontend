@@ -5,16 +5,33 @@ type ApiClient = ReturnType<typeof createApiClient>
 
 export interface Policy {
     id: number
+    policyId: number | null
+    authorUserId: number | null
+    categoryId: number | null
     name: string
     description: string | null
-    version: number
-    createdAt: string
-    updatedAt: string
+    version: number | null
+    createdAt: string | null
+    updatedAt: string | null
+    startsAt: string | null
+    expiresAt: string | null
+    minPrice: number | null
+    maxPrice: number | null
+    category: number | null
+    authorizedRole: number | null
+    isValid: boolean | null
 }
 
 export interface CreatePolicyDto {
+    categoryId?: number
     name: string
     description?: string
+    startsAt?: string
+    expiresAt?: string
+    minPrice?: number
+    maxPrice?: number
+    category?: number
+    authorizedRole?: number
 }
 
 export function fetchPolicies(client: ApiClient) {
@@ -25,10 +42,6 @@ export function fetchPoliciesByUser(client: ApiClient, userId: string) {
     return client.get<Policy[]>(`/api/policies?userId=${userId}`)
 }
 
-export function createPolicy(client: ApiClient, data: CreatePolicyDto, user: AuthUser) {
-    return client.post<Policy>("/api/policies", {
-        ...data,
-        createdBy: user.id,
-        createdByRole: user.role,
-    })
+export function createPolicy(client: ApiClient, data: CreatePolicyDto, userId: number) {
+    return client.post<Policy>(`/api/users/${userId}/policies`, data)
 }
