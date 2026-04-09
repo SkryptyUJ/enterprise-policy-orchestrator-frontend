@@ -3,12 +3,13 @@
 import { useRouter } from "next/navigation"
 import { useForm, type Resolver } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { ArrowLeft, FileText, ShieldCheck, Layers, Clock, Info } from "lucide-react"
+import { ArrowLeft, FileText, ShieldCheck, Layers, Clock, Info, Loader2 } from "lucide-react"
+import { useEffect } from "react"
 import { Form } from "@/components/ui/form"
 import { Button } from "@/components/ui/button"
 import { InputField, TextareaField } from "@/components/shared"
 import { createPolicySchema, type CreatePolicyFormValues } from "../schemas/createPolicy.schema"
-import { useCreatePolicy } from "../hooks/usePolicies"
+import { usePolicyDetail, useUpdatePolicy } from "../hooks/usePolicies"
 
 const POLICY_FEATURES = [
     {
@@ -28,9 +29,16 @@ const POLICY_FEATURES = [
     },
 ]
 
-export function CreatePolicyView() {
+interface EditPolicyViewProps {
+    policyId: number
+}
+
+export function EditPolicyView({ policyId }: EditPolicyViewProps) {
     const router = useRouter()
-    const { mutate: createPolicy, isPending, isError, error } = useCreatePolicy()
+
+    const { data: policy, isLoading: isFetching, isError: isFetchError } = usePolicyDetail(policyId)
+
+    const { mutate: updatePolicy, isPending, isError, error } = useUpdatePolicy(policyId)
 
     const form = useForm<CreatePolicyFormValues>({
         resolver: zodResolver(createPolicySchema) as unknown as Resolver<CreatePolicyFormValues>,
@@ -38,10 +46,53 @@ export function CreatePolicyView() {
         mode: "onTouched",
     })
 
+    useEffect(() => {
+        if (policy) {
+            form.reset({
+                name: policy.name || "",
+                description: policy.description || "",
+                categoryId: policy.categoryId || undefined,
+                category: policy.category || undefined,
+                authorizedRole: policy.authorizedRole || undefined,
+                minPrice: policy.minPrice || undefined,
+                maxPrice: policy.maxPrice || undefined,
+                startsAt: policy.startsAt ? new Date(policy.startsAt).toISOString().slice(0, 16) : undefined,
+                expiresAt: policy.expiresAt ? new Date(policy.expiresAt).toISOString().slice(0, 16) : undefined,
+            })
+        }
+    }, [policy, form])
+
     function onSubmit(values: CreatePolicyFormValues) {
-        createPolicy(values, {
+        updatePolicy(values, {
             onSuccess: () => router.push("/dashboard"),
         })
+    }
+
+    if (isFetching) {
+        return (
+            <div className="flex h-[50vh] items-center justify-center">
+                <Loader2 className="size-8 animate-spin text-primary" />
+            </div>
+        )
+    }
+
+    if (isFetchError || !policy) {
+        return (
+            <div className="flex h-[50vh] flex-col items-center justify-center gap-4 text-center">
+                <div className="rounded-full bg-destructive/10 p-3">
+                    <Info className="size-6 text-destructive" />
+                </div>
+                <div>
+                    <h2 className="text-xl font-semibold">Nie udało się pobrać polityki</h2>
+                    <p className="mt-1 text-muted-foreground border-destructive/30 bg-destructive/5 px-4 py-3 rounded-lg flex gap-3 text-sm text-destructive">
+                        Sprawdź, czy masz do niej dostęp lub spróbuj ponownie.
+                    </p>
+                </div>
+                <Button variant="outline" onClick={() => router.back()}>
+                    Wróć
+                </Button>
+            </div>
+        )
     }
 
     return (
@@ -63,24 +114,23 @@ export function CreatePolicyView() {
                         <FileText className="size-6 text-primary" />
                     </div>
                     <div>
-                        <h1 className="text-3xl font-bold tracking-tight">Tworzenie nowej polityki</h1>
+                        <h1 className="text-3xl font-bold tracking-tight">Edycja polityki</h1>
                         <p className="text-muted-foreground mt-1 text-lg">
-                            Wypełnij formularz, aby zdefiniować nową regułę w systemie.
+                            Wprowadź zmiany w polityce: <span className="font-medium text-foreground">{policy.name}</span>
                         </p>
                     </div>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-                
+
                 {/* Kolumna lewa — formularz */}
                 <div className="lg:col-span-7 xl:col-span-8 bg-card border rounded-2xl shadow-sm p-6 sm:p-8">
-                    {/* Numer kroku (opcjonalnie jako sekcja robocza) */}
                     <div className="flex items-center gap-3 mb-8">
                         <span className="size-7 rounded-full bg-primary text-primary-foreground text-sm font-bold flex items-center justify-center">
                             1
                         </span>
-                        <span className="text-sm font-medium text-foreground">Szczegóły polityki</span>
+                        <span className="text-sm font-medium text-foreground">Edycja szczegółów</span>
                         <div className="flex-1 h-px bg-border ml-2" />
                     </div>
 
@@ -153,7 +203,7 @@ export function CreatePolicyView() {
                                 <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 flex gap-3">
                                     <Info className="size-5 text-destructive shrink-0 mt-0.5" />
                                     <p className="text-sm text-destructive">
-                                        {error instanceof Error ? error.message : "Wystąpił błąd. Spróbuj ponownie."}
+                                        {error instanceof Error ? error.message : "Wystąpił błąd podczas aktualizacji."}
                                     </p>
                                 </div>
                             )}
@@ -173,7 +223,7 @@ export function CreatePolicyView() {
                                     disabled={isPending}
                                     className="flex-1 px-8"
                                 >
-                                    {isPending ? "Zapisywanie..." : "Utwórz politykę"}
+                                    {isPending ? "Zapisywanie..." : "Zapisz zmiany"}
                                 </Button>
                             </div>
                         </form>
@@ -187,7 +237,7 @@ export function CreatePolicyView() {
                             <Info className="size-4" />
                             Kluczowe funkcje
                         </div>
-                        
+
                         <div className="space-y-6">
                             {POLICY_FEATURES.map(({ icon: Icon, title, description }) => (
                                 <div key={title} className="flex gap-4 group">

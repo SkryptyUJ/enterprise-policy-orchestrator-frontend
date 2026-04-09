@@ -7,8 +7,10 @@ type RequestOptions = Omit<RequestInit, "headers"> & {
 export function createApiClient(getToken: GetToken) {
     async function request<T>(url: string, options: RequestOptions = {}): Promise<T> {
         const token = await getToken()
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || ""
+        const fullUrl = url.startsWith("http") ? url : `${baseUrl}${url}`
 
-        const res = await fetch(url, {
+        const res = await fetch(fullUrl, {
             ...options,
             headers: {
                 "Content-Type": "application/json",

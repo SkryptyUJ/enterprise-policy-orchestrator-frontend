@@ -1,25 +1,37 @@
 "use client"
 
-import { useUser } from "@auth0/nextjs-auth0"
+import { useUser } from "@auth0/nextjs-auth0/client"
+
+export type Role = "admin" | "employee" | "manager";
 
 export interface AuthUser {
     id: string
     email: string
     name: string
-    role: "admin" | "manager" | "viewer"  // claim z Auth0, np. z namespace "https://policy-orchestrator.com/role"
+    roles: Role[]  // A user can have multiple roles
 }
 
-export function useAuth(): { user: AuthUser | null; isLoading: boolean } {
-    // const { user, isLoading } = useUser()
-    // return {
-    //   user: user ? {
-    //     id: user.sub!,
-    //     email: user.email!,
-    //     name: user.name!,
-    //     role: user["https://policy-orchestrator.com/role"] as AuthUser["role"],
-    //   } : null,
-    //   isLoading,
-    // }
+export function useAuth(): { user: AuthUser | null; isLoading: boolean; error?: Error | null } {
+    const { user, isLoading, error } = useUser()
 
-    return { user: null, isLoading: false }
+    if (!user) {
+        return { user: null, isLoading, error }
+    }
+
+    // Role pochodzą z custom claim "https://policy-orchestrator.com/roles"
+    // Na ten moment ZAMOCKOWANE - użytkownik z Auth0 dostaje lokalnie wszystkie możliwe role!
+    // Docelowo: const rawRoles = user["https://policy-orchestrator.com/roles"] as string[] | undefined;
+    const rawRoles = ["admin", "employee", "manager"];
+    const roles = Array.isArray(rawRoles) ? (rawRoles as Role[]) : [];
+
+    return {
+        user: {
+            id: user.sub ?? "",
+            email: user.email ?? "",
+            name: user.name ?? "",
+            roles,
+        },
+        isLoading,
+        error
+    }
 }
