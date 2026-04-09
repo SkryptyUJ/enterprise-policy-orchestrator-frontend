@@ -15,7 +15,6 @@ export function LoginView() {
                         Zarządzanie kontami odbywa się przez Auth0. Kliknij poniżej, aby przejść do logowania.
                     </p>
                     <a
-                        // size="lg"
                         className="w-full"
                         href="/auth/login"
                     >

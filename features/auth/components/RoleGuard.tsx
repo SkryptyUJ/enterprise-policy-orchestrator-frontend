@@ -20,7 +20,6 @@ export function RoleGuard({ children, allowedRoles, fallback = null }: RoleGuard
         return <>{fallback}</>;
     }
 
-    // Check if the user has AT LEAST ONE of the allowed roles
     const hasAccess = allowedRoles.some((role) => user.roles.includes(role));
 
     if (!hasAccess) {

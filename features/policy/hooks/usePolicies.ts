@@ -37,11 +37,10 @@ export function useCreatePolicy() {
     const { user } = useAuth()
 
     return useMutation({
-        mutationFn: (data: import("../api").CreatePolicyDto) => {
+        mutationFn: (data: CreatePolicyDto) => {
             if (!user) throw new Error("Brak zalogowanego użytkownika")
 
-            // Ekstrakcja liczbowego ID z usera i zredukowanie długości do 8 cyfr 
-            // by zmieścić się w limicie Javy dla typu Long (max ~9.22 * 10^18)
+            // TEMP
             let userId = 1
             if (user.id) {
                 const match = user.id.match(/\d+$/)
