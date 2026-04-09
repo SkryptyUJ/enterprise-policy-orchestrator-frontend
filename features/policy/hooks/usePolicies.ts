@@ -1,7 +1,7 @@
 "use client"
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { fetchPolicies, fetchPoliciesByUser, createPolicy, getPolicyById, updatePolicy } from "../api"
+import { fetchPolicies, fetchPoliciesByUser, createPolicy, getPolicyById, updatePolicy, CreatePolicyDto } from "../api"
 import { useApiClient } from "@/lib/useApiClient"
 import { useAuth } from "@/features/auth/hooks/useAuth"
 
@@ -93,7 +93,7 @@ export function useUpdatePolicy(policyId: number) {
     const { user } = useAuth()
 
     return useMutation({
-        mutationFn: (data: import("../api").CreatePolicyDto) => {
+        mutationFn: (data: CreatePolicyDto) => {
             if (!user) throw new Error("Brak zalogowanego użytkownika")
 
             let userId = 1

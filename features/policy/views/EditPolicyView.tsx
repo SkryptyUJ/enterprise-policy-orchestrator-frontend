@@ -46,7 +46,6 @@ export function EditPolicyView({ policyId }: EditPolicyViewProps) {
         mode: "onTouched",
     })
 
-
     useEffect(() => {
         if (policy) {
             form.reset({
