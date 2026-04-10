@@ -1,9 +1,10 @@
 "use client"
 
 import { useState } from "react"
-import { FileText, History, Calendar, DollarSign, Tag, CheckCircle2, Shield } from "lucide-react"
+import Link from "next/link"
+import { FileText, History, Calendar, DollarSign, Tag, CheckCircle2, Shield, Loader2, Info, Pencil } from "lucide-react"
 import { PolicyHistoryView } from "./PolicyHistoryView"
-import { usePolicyVersions } from "../hooks/usePolicyVersions"
+import { usePolicyDetail } from "../hooks/usePolicies"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 
@@ -13,10 +14,31 @@ interface PolicyDetailLayoutProps {
 
 export function PolicyDetailLayout({ policyId }: PolicyDetailLayoutProps) {
     const [showHistory, setShowHistory] = useState(false)
-    const numericId = parseInt(policyId, 10) || 100
-    const { allVersions } = usePolicyVersions(numericId)
+    const { data: currentPolicy, isLoading, isError } = usePolicyDetail(policyId)
 
-    const currentPolicy = allVersions.length > 0 ? allVersions[allVersions.length - 1] : null
+    if (isLoading) {
+        return (
+            <div className="flex h-[50vh] items-center justify-center">
+                <Loader2 className="size-8 animate-spin text-primary" />
+            </div>
+        )
+    }
+
+    if (isError) {
+        return (
+            <div className="flex h-[50vh] flex-col items-center justify-center gap-4 text-center">
+                <div className="rounded-full bg-destructive/10 p-3">
+                    <Info className="size-6 text-destructive" />
+                </div>
+                <div>
+                    <h2 className="text-xl font-semibold">Nie udało się pobrać polityki</h2>
+                    <p className="mt-1 text-muted-foreground border-destructive/30 bg-destructive/5 px-4 py-3 rounded-lg flex gap-3 text-sm text-destructive">
+                        Sprawdź, czy polityka istnieje lub odśwież stronę.
+                    </p>
+                </div>
+            </div>
+        )
+    }
 
     return (
         <div className={`grid grid-cols-1 ${showHistory ? 'xl:grid-cols-2' : 'max-w-4xl mx-auto'} gap-8 items-start transition-all duration-300`}>
@@ -32,14 +54,22 @@ export function PolicyDetailLayout({ policyId }: PolicyDetailLayoutProps) {
                             <p className="text-sm text-muted-foreground">Aktualne szczegóły polityki dostępu.</p>
                         </div>
                     </div>
-                    <Button
-                        onClick={() => setShowHistory(!showHistory)}
-                        variant={showHistory ? "secondary" : "default"}
-                        className="gap-2 shrink-0 transition-all"
-                    >
-                        <History className="size-4" />
-                        {showHistory ? "Ukryj historię" : "Zobacz historię"}
-                    </Button>
+                    <div className="flex gap-2">
+                        <Button
+                            onClick={() => setShowHistory(!showHistory)}
+                            variant={showHistory ? "secondary" : "outline"}
+                            className="gap-2 shrink-0 transition-all"
+                        >
+                            <History className="size-4" />
+                            {showHistory ? "Ukryj historię" : "Zobacz historię"}
+                        </Button>
+                        <Link href={`/policy/${policyId}/edit`} passHref>
+                            <Button className="gap-2 shrink-0 transition-all">
+                                <Pencil className="size-4" />
+                                Edytuj
+                            </Button>
+                        </Link>
+                    </div>
                 </div>
 
                 {currentPolicy ? (
