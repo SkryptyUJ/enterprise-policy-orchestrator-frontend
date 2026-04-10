@@ -30,7 +30,7 @@ const POLICY_FEATURES = [
 ]
 
 interface EditPolicyViewProps {
-    policyId: number
+    policyId: string
 }
 
 export function EditPolicyView({ policyId }: EditPolicyViewProps) {
@@ -63,9 +63,12 @@ export function EditPolicyView({ policyId }: EditPolicyViewProps) {
     }, [policy, form])
 
     function onSubmit(values: CreatePolicyFormValues) {
-        updatePolicy(values, {
-            onSuccess: () => router.push("/dashboard"),
-        })
+        updatePolicy(
+            { ...values, policyId: policy?.policyId ? String(policy.policyId) : undefined },
+            {
+                onSuccess: () => router.push("/dashboard"),
+            }
+        )
     }
 
     if (isFetching) {

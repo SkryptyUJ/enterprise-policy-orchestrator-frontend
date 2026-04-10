@@ -40,17 +40,7 @@ export function useCreatePolicy() {
         mutationFn: (data: CreatePolicyDto) => {
             if (!user) throw new Error("Brak zalogowanego użytkownika")
 
-            // TEMP
-            let userId = 1
-            if (user.id) {
-                const match = user.id.match(/\d+$/)
-                if (match) {
-                    const digits = match[0].slice(-8)
-                    userId = parseInt(digits, 10)
-                }
-            }
-
-            return createPolicy(client, data, userId)
+            return createPolicy(client, data, user.id)
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: policyKeys.all })
@@ -61,7 +51,7 @@ export function useCreatePolicy() {
     })
 }
 
-export function usePolicyDetail(policyId: number) {
+export function usePolicyDetail(policyId: string) {
     const client = useApiClient()
     const { user } = useAuth()
 
@@ -70,23 +60,13 @@ export function usePolicyDetail(policyId: number) {
         queryFn: () => {
             if (!user) throw new Error("Brak zalogowanego użytkownika")
 
-            // TEMP FIX TS ERROR, USER ID ON BACKEND IS TYPE OF LONG
-            let userId = 1
-            if (user.id) {
-                const match = user.id.match(/\d+$/)
-                if (match) {
-                    const digits = match[0].slice(-8)
-                    userId = parseInt(digits, 10)
-                }
-            }
-
-            return getPolicyById(client, userId, policyId)
+            return getPolicyById(client, user.id, policyId)
         },
         enabled: !!user && !!policyId,
     })
 }
 
-export function useUpdatePolicy(policyId: number) {
+export function useUpdatePolicy(policyId: string) {
     const queryClient = useQueryClient()
     const client = useApiClient()
     const { user } = useAuth()
@@ -95,16 +75,7 @@ export function useUpdatePolicy(policyId: number) {
         mutationFn: (data: CreatePolicyDto) => {
             if (!user) throw new Error("Brak zalogowanego użytkownika")
 
-            let userId = 1
-            if (user.id) {
-                const match = user.id.match(/\d+$/)
-                if (match) {
-                    const digits = match[0].slice(-8)
-                    userId = parseInt(digits, 10)
-                }
-            }
-
-            return updatePolicy(client, data, userId, policyId)
+            return updatePolicy(client, data, user.id, policyId)
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: policyKeys.all })
