@@ -12,7 +12,7 @@ export function useCreateExpenseRequest() {
     return useMutation({
         mutationFn: (data: CreateExpenseRequestDto) => {
             if (!user) throw new Error("Brak zalogowanego użytkownika")
-            return createExpenseRequest(client, user.id, data)
+            return createExpenseRequest(client, data)
         },
     })
 }

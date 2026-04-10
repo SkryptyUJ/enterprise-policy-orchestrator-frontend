@@ -1,5 +1,10 @@
 import { describe, it, expect, vi } from "vitest"
-import { createExpenseRequest, type CreateExpenseRequestDto } from "./index"
+import {
+    createExpenseRequest,
+    fetchExpenseRequests,
+    fetchExpenseRequestDetails,
+    type CreateExpenseRequestDto,
+} from "./index"
 
 describe("createExpenseRequest", () => {
     const mockDto: CreateExpenseRequestDto = {
@@ -24,17 +29,14 @@ describe("createExpenseRequest", () => {
             delete: vi.fn(),
         }
 
-        const result = await createExpenseRequest(mockClient, "1", mockDto)
+        const result = await createExpenseRequest(mockClient, mockDto)
 
         expect(mockClient.post).toHaveBeenCalledOnce()
-        expect(mockClient.post).toHaveBeenCalledWith(
-            "http://localhost:8080/api/users/1/expense-requests",
-            mockDto
-        )
+        expect(mockClient.post).toHaveBeenCalledWith("http://localhost:8080/api/expense-requests", mockDto)
         expect(result).toEqual(mockResponse)
     })
 
-    it("przekazuje userId w URL", async () => {
+    it("używa wspólnego endpointu bez userId", async () => {
         const mockClient = {
             get: vi.fn(),
             post: vi.fn().mockResolvedValue(mockResponse),
@@ -43,12 +45,9 @@ describe("createExpenseRequest", () => {
             delete: vi.fn(),
         }
 
-        await createExpenseRequest(mockClient, "42", mockDto)
+        await createExpenseRequest(mockClient, mockDto)
 
-        expect(mockClient.post).toHaveBeenCalledWith(
-            "http://localhost:8080/api/users/42/expense-requests",
-            mockDto
-        )
+        expect(mockClient.post).toHaveBeenCalledWith("http://localhost:8080/api/expense-requests", mockDto)
     })
 
     it("propaguje błąd z klienta API", async () => {
@@ -60,8 +59,39 @@ describe("createExpenseRequest", () => {
             delete: vi.fn(),
         }
 
-        await expect(createExpenseRequest(mockClient, "1", mockDto)).rejects.toThrow(
-            "Request failed: 500"
-        )
+        await expect(createExpenseRequest(mockClient, mockDto)).rejects.toThrow("Request failed: 500")
     })
 })
+
+describe("fetchExpenseRequests", () => {
+    it("wysyła GET na poprawny URL", async () => {
+        const mockClient = {
+            get: vi.fn().mockResolvedValue([]),
+            post: vi.fn(),
+            put: vi.fn(),
+            patch: vi.fn(),
+            delete: vi.fn(),
+        }
+
+        await fetchExpenseRequests(mockClient)
+
+        expect(mockClient.get).toHaveBeenCalledWith("http://localhost:8080/api/expense-requests")
+    })
+})
+
+describe("fetchExpenseRequestDetails", () => {
+    it("wysyła GET na endpoint szczegółów", async () => {
+        const mockClient = {
+            get: vi.fn().mockResolvedValue({ id: "exp-1" }),
+            post: vi.fn(),
+            put: vi.fn(),
+            patch: vi.fn(),
+            delete: vi.fn(),
+        }
+
+        await fetchExpenseRequestDetails(mockClient, "exp-1")
+
+        expect(mockClient.get).toHaveBeenCalledWith("http://localhost:8080/api/expense-requests/exp-1")
+    })
+})
+
