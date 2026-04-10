@@ -1,7 +1,7 @@
 "use client"
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { fetchPolicies, fetchPoliciesByUser, createPolicy, getPolicyById, updatePolicy, CreatePolicyDto } from "../api"
+import { fetchPolicies, fetchPoliciesByUser, createPolicy, getPolicyById, updatePolicy, getAllPolicies, setPolicyExpiration, CreatePolicyDto, SetPolicyExpirationDto } from "../api"
 import { useApiClient } from "@/lib/useApiClient"
 import { useAuth } from "@/features/auth/hooks/useAuth"
 
@@ -105,6 +105,60 @@ export function useUpdatePolicy(policyId: number) {
             }
 
             return updatePolicy(client, data, userId, policyId)
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: policyKeys.all })
+            queryClient.invalidateQueries({ queryKey: policyKeys.detail(String(policyId)) })
+            if (user) {
+                queryClient.invalidateQueries({ queryKey: policyKeys.byUser(user.id) })
+            }
+        },
+    })
+}
+
+export function useAllPolicies() {
+    const client = useApiClient()
+    const { user } = useAuth()
+
+    return useQuery({
+        queryKey: policyKeys.all,
+        queryFn: () => {
+            if (!user) throw new Error("Brak zalogowanego użytkownika")
+
+            let userId = 1
+            if (user.id) {
+                const match = user.id.match(/\d+$/)
+                if (match) {
+                    const digits = match[0].slice(-8)
+                    userId = parseInt(digits, 10)
+                }
+            }
+
+            return getAllPolicies(client, userId)
+        },
+        enabled: !!user,
+    })
+}
+
+export function useSetPolicyExpiration(policyId: number) {
+    const queryClient = useQueryClient()
+    const client = useApiClient()
+    const { user } = useAuth()
+
+    return useMutation({
+        mutationFn: (data: SetPolicyExpirationDto) => {
+            if (!user) throw new Error("Brak zalogowanego użytkownika")
+
+            let userId = 1
+            if (user.id) {
+                const match = user.id.match(/\d+$/)
+                if (match) {
+                    const digits = match[0].slice(-8)
+                    userId = parseInt(digits, 10)
+                }
+            }
+
+            return setPolicyExpiration(client, userId, policyId, data)
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: policyKeys.all })

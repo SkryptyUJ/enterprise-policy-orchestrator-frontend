@@ -1,9 +1,13 @@
 "use client"
 
 import { useState } from "react"
-import { FileText, History, Calendar, DollarSign, Tag, CheckCircle2, Shield } from "lucide-react"
+import { FileText, History, Calendar, DollarSign, Tag, CheckCircle2, Shield, Loader2, Info, CalendarOff } from "lucide-react"
+import Link from "next/link"
 import { PolicyHistoryView } from "./PolicyHistoryView"
 import { usePolicyVersions } from "../hooks/usePolicyVersions"
+import { usePolicyDetail } from "../hooks/usePolicies"
+import { SetExpirationDialog } from "../components/SetExpirationDialog"
+import { RoleGuard } from "@/features/auth/components/RoleGuard"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 
@@ -15,8 +19,31 @@ export function PolicyDetailLayout({ policyId }: PolicyDetailLayoutProps) {
     const [showHistory, setShowHistory] = useState(false)
     const numericId = parseInt(policyId, 10) || 100
     const { allVersions } = usePolicyVersions(numericId)
+    const { data: policy, isLoading, isError } = usePolicyDetail(numericId)
 
-    const currentPolicy = allVersions.length > 0 ? allVersions[allVersions.length - 1] : null
+    const currentPolicy = policy || (allVersions.length > 0 ? allVersions[allVersions.length - 1] : null)
+
+    const isExpired = currentPolicy?.expiresAt ? new Date(currentPolicy.expiresAt) <= new Date() : false
+    const isActive = currentPolicy?.isValid && !isExpired
+
+    if (isLoading) {
+        return (
+            <div className="flex h-[50vh] items-center justify-center">
+                <Loader2 className="size-8 animate-spin text-primary" />
+            </div>
+        )
+    }
+
+    if (isError) {
+        return (
+            <div className="flex h-[50vh] flex-col items-center justify-center gap-4 text-center">
+                <div className="rounded-full bg-destructive/10 p-3">
+                    <Info className="size-6 text-destructive" />
+                </div>
+                <p className="text-muted-foreground">Nie udało się pobrać szczegółów polityki.</p>
+            </div>
+        )
+    }
 
     return (
         <div className={`grid grid-cols-1 ${showHistory ? 'xl:grid-cols-2' : 'max-w-4xl mx-auto'} gap-8 items-start transition-all duration-300`}>
@@ -40,6 +67,20 @@ export function PolicyDetailLayout({ policyId }: PolicyDetailLayoutProps) {
                         <History className="size-4" />
                         {showHistory ? "Ukryj historię" : "Zobacz historię"}
                     </Button>
+                    <Button variant="outline" size="default" asChild>
+                        <Link href={`/policy/${policyId}/edit`}>
+                            Edytuj
+                        </Link>
+                    </Button>
+                    {currentPolicy && (
+                        <RoleGuard allowedRoles={["compliance_officer", "admin"]}>
+                            <SetExpirationDialog
+                                policyId={numericId}
+                                policyName={currentPolicy.name}
+                                currentExpiresAt={currentPolicy.expiresAt}
+                            />
+                        </RoleGuard>
+                    )}
                 </div>
 
                 {currentPolicy ? (
@@ -53,9 +94,15 @@ export function PolicyDetailLayout({ policyId }: PolicyDetailLayoutProps) {
                                     <CardTitle className="text-xl">{currentPolicy.name}</CardTitle>
                                 </div>
                                 {currentPolicy.isValid && (
-                                    <span className="bg-green-100 text-green-700 border border-green-200 text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5 shadow-sm">
-                                        <CheckCircle2 className="size-3.5" /> Aktywna
-                                    </span>
+                                    isActive ? (
+                                        <span className="bg-green-100 text-green-700 border border-green-200 text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5 shadow-sm">
+                                            <CheckCircle2 className="size-3.5" /> Aktywna
+                                        </span>
+                                    ) : isExpired ? (
+                                        <span className="bg-amber-100 text-amber-700 border border-amber-200 text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5 shadow-sm">
+                                            <CalendarOff className="size-3.5" /> Wygasła
+                                        </span>
+                                    ) : null
                                 )}
                             </div>
                         </CardHeader>

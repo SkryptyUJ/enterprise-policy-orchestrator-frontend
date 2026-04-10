@@ -1,4 +1,5 @@
 import { FileText } from "lucide-react"
+import { PolicyList } from "@/features/policy/components/PolicyList"
 
 export const metadata = {
     title: "Wszystkie polityki — Policy Orchestrator",
@@ -14,14 +15,12 @@ export default function AllPoliciesPage() {
                     </div>
                     <div>
                         <h1 className="text-2xl font-bold tracking-tight">Wszystkie polityki</h1>
-                        <p className="text-sm text-muted-foreground">Przeglądaj i zarządzaj wszystkimi politykami w systemie.</p>
+                        <p className="text-sm text-muted-foreground">Przeglądaj i zarządzaj wszystkimi politykami w systemie. Dezaktywowane polityki pozostają widoczne w historii.</p>
                     </div>
                 </div>
             </div>
 
-            <div className="rounded-md border border-border bg-card p-8 text-center text-card-foreground">
-                <p>Tu w przyszłości znajdzie się lista polityk...</p>
-            </div>
+            <PolicyList />
         </div>
     )
 }
