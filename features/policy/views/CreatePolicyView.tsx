@@ -1,14 +1,22 @@
 "use client"
 
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useForm, type Resolver } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { ArrowLeft, FileText, ShieldCheck, Layers, Clock, Info } from "lucide-react"
 import { Form } from "@/components/ui/form"
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Label } from "@/components/ui/label"
 import { InputField, TextareaField } from "@/components/shared"
 import { createPolicySchema, type CreatePolicyFormValues } from "../schemas/createPolicy.schema"
 import { useCreatePolicy } from "../hooks/usePolicies"
+
+function toLocalDatetimeString(date: Date): string {
+    const pad = (n: number) => String(n).padStart(2, "0")
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
+}
 
 const POLICY_FEATURES = [
     {
@@ -31,12 +39,22 @@ const POLICY_FEATURES = [
 export function CreatePolicyView() {
     const router = useRouter()
     const { mutate: createPolicy, isPending, isError, error } = useCreatePolicy()
+    const [applyNow, setApplyNow] = useState(false)
 
     const form = useForm<CreatePolicyFormValues>({
         resolver: zodResolver(createPolicySchema) as unknown as Resolver<CreatePolicyFormValues>,
         defaultValues: { name: "", description: "" } as never,
         mode: "onTouched",
     })
+
+    function handleApplyNowChange(checked: boolean) {
+        setApplyNow(checked)
+        if (checked) {
+            form.setValue("startsAt", toLocalDatetimeString(new Date()), { shouldValidate: true })
+        } else {
+            form.setValue("startsAt", "" as never, { shouldValidate: false })
+        }
+    }
 
     function onSubmit(values: CreatePolicyFormValues) {
         createPolicy(values, {
@@ -136,17 +154,32 @@ export function CreatePolicyView() {
                                 />
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <InputField<CreatePolicyFormValues>
-                                    name="startsAt"
-                                    type="datetime-local"
-                                    label="Data rozpoczęcia (opcjonalnie)"
-                                />
-                                <InputField<CreatePolicyFormValues>
-                                    name="expiresAt"
-                                    type="datetime-local"
-                                    label="Data wygaśnięcia (opcjonalnie)"
-                                />
+                            <div className="space-y-3">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <InputField<CreatePolicyFormValues>
+                                            name="startsAt"
+                                            type="datetime-local"
+                                            label="Data rozpoczęcia"
+                                            disabled={applyNow}
+                                        />
+                                        <div className="flex items-center gap-2">
+                                            <Checkbox
+                                                id="applyNow"
+                                                checked={applyNow}
+                                                onCheckedChange={(checked) => handleApplyNowChange(checked === true)}
+                                            />
+                                            <Label htmlFor="applyNow" className="font-normal cursor-pointer text-sm">
+                                                Zaaplikuj od razu
+                                            </Label>
+                                        </div>
+                                    </div>
+                                    <InputField<CreatePolicyFormValues>
+                                        name="expiresAt"
+                                        type="datetime-local"
+                                        label="Data wygaśnięcia (opcjonalnie)"
+                                    />
+                                </div>
                             </div>
 
                             {isError && (
