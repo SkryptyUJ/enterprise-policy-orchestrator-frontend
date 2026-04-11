@@ -66,7 +66,7 @@ describe("useAllPolicies", () => {
         await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
         expect(result.current.data).toEqual(mockPolicies)
-        expect(mockGet).toHaveBeenCalledWith("/api/users/1/policies")
+        expect(mockGet).toHaveBeenCalledWith("/api/users/auth0|00000001/policies")
     })
 })
 
@@ -81,7 +81,7 @@ describe("useSetPolicyExpiration", () => {
         await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
         expect(mockPatch).toHaveBeenCalledWith(
-            "/api/users/1/policies/5/expiration",
+            "/api/users/auth0|00000001/policies/5/expiration",
             { expiresAt: "2026-12-31T23:59:00.000Z" }
         )
     })

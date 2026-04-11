@@ -57,10 +57,10 @@ export function updatePolicy(client: ApiClient, data: CreatePolicyDto, userId: n
     return client.put<Policy>(`/api/users/${userId}/policies/${policyId}`, data)
 }
 
-export function getAllPolicies(client: ApiClient, userId: number) {
+export function getAllPolicies(client: ApiClient, userId: string) {
     return client.get<Policy[]>(`/api/users/${userId}/policies`)
 }
 
-export function setPolicyExpiration(client: ApiClient, userId: number, policyId: number, data: SetPolicyExpirationDto) {
+export function setPolicyExpiration(client: ApiClient, userId: string, policyId: number, data: SetPolicyExpirationDto) {
     return client.patch<Policy>(`/api/users/${userId}/policies/${policyId}/expiration`, data)
 }

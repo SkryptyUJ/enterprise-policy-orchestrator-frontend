@@ -125,16 +125,7 @@ export function useAllPolicies() {
         queryFn: () => {
             if (!user) throw new Error("Brak zalogowanego użytkownika")
 
-            let userId = 1
-            if (user.id) {
-                const match = user.id.match(/\d+$/)
-                if (match) {
-                    const digits = match[0].slice(-8)
-                    userId = parseInt(digits, 10)
-                }
-            }
-
-            return getAllPolicies(client, userId)
+            return getAllPolicies(client, user.id)
         },
         enabled: !!user,
     })
@@ -149,16 +140,7 @@ export function useSetPolicyExpiration(policyId: number) {
         mutationFn: (data: SetPolicyExpirationDto) => {
             if (!user) throw new Error("Brak zalogowanego użytkownika")
 
-            let userId = 1
-            if (user.id) {
-                const match = user.id.match(/\d+$/)
-                if (match) {
-                    const digits = match[0].slice(-8)
-                    userId = parseInt(digits, 10)
-                }
-            }
-
-            return setPolicyExpiration(client, userId, policyId, data)
+            return setPolicyExpiration(client, user.id, policyId, data)
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: policyKeys.all })
