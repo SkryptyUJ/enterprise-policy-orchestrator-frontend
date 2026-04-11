@@ -14,7 +14,7 @@ import {
     SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import { useAuth, Role } from "@/features/auth/hooks/useAuth"
-import { LayoutDashboard, FileText, FilePlus, LogOut, ArrowLeftRight, ChevronRight, Settings } from "lucide-react"
+import { LayoutDashboard, FileText, FilePlus, LogOut, ArrowLeftRight, ChevronRight, Settings, List } from "lucide-react"
 import Link from "next/link"
 
 type NavItem = {
@@ -48,6 +48,12 @@ const MENU_CONFIG: NavGroup[] = [
                 url: "/expense-request/new",
                 icon: ArrowLeftRight,
                 roles: ["employee"]
+            },
+            {
+                title: "Historia wnioskow",
+                url: "/expense-request/history",
+                icon: List,
+                roles: ["employee", "manager", "admin"]
             }
         ]
     },

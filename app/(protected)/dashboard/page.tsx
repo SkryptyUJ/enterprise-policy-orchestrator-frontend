@@ -15,6 +15,9 @@ export default function DashboardPage() {
                         <Link href="/expense-request/new">Nowy wniosek wydatkowy</Link>
                     </Button>
                     <Button asChild>
+                        <Link href="/expense-request/history">Historia wnioskow</Link>
+                    </Button>
+                    <Button asChild>
                         <Link href="/policy/new">Nowa polityka</Link>
                     </Button>
                     <Button asChild>
