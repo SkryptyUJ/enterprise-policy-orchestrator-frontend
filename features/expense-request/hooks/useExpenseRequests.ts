@@ -37,7 +37,7 @@ export function useExpenseRequestDetails(expenseRequestId: string | null) {
         queryFn: () => {
             if (!user) throw new Error("Brak zalogowanego użytkownika")
             if (!expenseRequestId) throw new Error("Brak identyfikatora wniosku")
-            return fetchExpenseRequestDetails(client, expenseRequestId)
+            return fetchExpenseRequestDetails(client, user.id, expenseRequestId)
         },
         enabled: Boolean(user && expenseRequestId),
     })

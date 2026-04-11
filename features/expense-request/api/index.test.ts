@@ -29,10 +29,10 @@ describe("createExpenseRequest", () => {
             delete: vi.fn(),
         }
 
-        const result = await createExpenseRequest(mockClient, mockDto)
+        const result = await createExpenseRequest(mockClient, "user-123", mockDto)
 
         expect(mockClient.post).toHaveBeenCalledOnce()
-        expect(mockClient.post).toHaveBeenCalledWith("http://localhost:8080/api/expense-requests", mockDto)
+        expect(mockClient.post).toHaveBeenCalledWith("http://localhost:8080/api/users/user-123/expense-requests", mockDto)
         expect(result).toEqual(mockResponse)
     })
 
@@ -45,9 +45,9 @@ describe("createExpenseRequest", () => {
             delete: vi.fn(),
         }
 
-        await createExpenseRequest(mockClient, mockDto)
+        await createExpenseRequest(mockClient, "user-123", mockDto)
 
-        expect(mockClient.post).toHaveBeenCalledWith("http://localhost:8080/api/expense-requests", mockDto)
+        expect(mockClient.post).toHaveBeenCalledWith("http://localhost:8080/api/users/user-123/expense-requests", mockDto)
     })
 
     it("propaguje błąd z klienta API", async () => {
@@ -89,9 +89,9 @@ describe("fetchExpenseRequestDetails", () => {
             delete: vi.fn(),
         }
 
-        await fetchExpenseRequestDetails(mockClient, "exp-1")
+        await fetchExpenseRequestDetails(mockClient, "user-123", "exp-1")
 
-        expect(mockClient.get).toHaveBeenCalledWith("http://localhost:8080/api/expense-requests/exp-1")
+        expect(mockClient.get).toHaveBeenCalledWith("http://localhost:8080/api/user-123/expense-requests/exp-1")
     })
 })
 

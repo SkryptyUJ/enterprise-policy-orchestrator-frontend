@@ -34,14 +34,19 @@ export function fetchExpenseRequests(client: ApiClient) {
 
 export function fetchExpenseRequestDetails(
     client: ApiClient,
+    userId: string,
     expenseRequestId: string
 ) {
-    return client.get<ExpenseRequestDetails>(`${API_BASE}/expense-requests/${expenseRequestId}`)
+    return client.get<ExpenseRequestDetails>(`${API_BASE}/${userId}/expense-requests/${expenseRequestId}`)
 }
 
 export function createExpenseRequest(
     client: ApiClient,
+    userId: string,
     data: CreateExpenseRequestDto
 ) {
-    return client.post<ExpenseRequest>(`${API_BASE}/expense-requests`, data)
+    return client.post<ExpenseRequest>(
+        `${API_BASE}/users/${userId}/expense-requests`,
+        data
+    )
 }
