@@ -22,6 +22,7 @@ export interface Policy {
 }
 
 export interface CreatePolicyDto {
+    policyId?: string
     categoryId?: number
     name: string
     description?: string
@@ -45,16 +46,20 @@ export function fetchPoliciesByUser(client: ApiClient, userId: string) {
     return client.get<Policy[]>(`/api/policies?userId=${userId}`)
 }
 
-export function createPolicy(client: ApiClient, data: CreatePolicyDto, userId: number) {
+export function createPolicy(client: ApiClient, data: CreatePolicyDto, userId: string) {
     return client.post<Policy>(`/api/users/${userId}/policies`, data)
 }
 
-export function getPolicyById(client: ApiClient, userId: number, policyId: number) {
+export function getPolicyById(client: ApiClient, userId: string, policyId: string) {
     return client.get<Policy>(`/api/users/${userId}/policies/${policyId}`)
 }
 
-export function updatePolicy(client: ApiClient, data: CreatePolicyDto, userId: number, policyId: number) {
-    return client.put<Policy>(`/api/users/${userId}/policies/${policyId}`, data)
+export function updatePolicy(client: ApiClient, data: CreatePolicyDto, userId: string, policyId: string) {
+    return client.post<Policy>(`/api/users/${userId}/policies`, { ...data, policyId: data.policyId || String(policyId) })
+}
+
+export function getPolicyHistory(client: ApiClient, userId: string, policyId: string) {
+    return client.get<Policy[]>(`/api/users/${userId}/policies/${policyId}/history`)
 }
 
 export function getAllPolicies(client: ApiClient, userId: string) {

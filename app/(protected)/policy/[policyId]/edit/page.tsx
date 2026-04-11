@@ -10,8 +10,8 @@ interface EditPolicyPageProps {
     }
 }
 
-export default function EditPolicyPage({ params }: EditPolicyPageProps) {
-    const policyId = parseInt(params.policyId, 10)
+export default async function EditPolicyPage({ params }: EditPolicyPageProps) {
+    const { policyId } = await params;
 
     return <EditPolicyView policyId={policyId} />
 }
