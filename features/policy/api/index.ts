@@ -34,6 +34,10 @@ export interface CreatePolicyDto {
     authorizedRole?: number
 }
 
+export interface SetPolicyExpirationDto {
+    expiresAt: string
+}
+
 export function fetchPolicies(client: ApiClient) {
     return client.get<Policy[]>("/api/policies")
 }
@@ -56,4 +60,12 @@ export function updatePolicy(client: ApiClient, data: CreatePolicyDto, userId: s
 
 export function getPolicyHistory(client: ApiClient, userId: string, policyId: string) {
     return client.get<Policy[]>(`/api/users/${userId}/policies/${policyId}/history`)
+}
+
+export function getAllPolicies(client: ApiClient, userId: string) {
+    return client.get<Policy[]>(`/api/users/${userId}/policies`)
+}
+
+export function setPolicyExpiration(client: ApiClient, userId: string, policyId: number, data: SetPolicyExpirationDto) {
+    return client.patch<Policy>(`/api/users/${userId}/policies/${policyId}/expiration`, data)
 }

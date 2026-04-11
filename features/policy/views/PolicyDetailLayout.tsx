@@ -2,9 +2,12 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { FileText, History, Calendar, DollarSign, Tag, CheckCircle2, Shield, Loader2, Info, Pencil } from "lucide-react"
+import { FileText, History, Calendar, DollarSign, Tag, CheckCircle2, Shield, Loader2, Info, CalendarOff, Pencil } from "lucide-react"
 import { PolicyHistoryView } from "./PolicyHistoryView"
+import { usePolicyVersions } from "../hooks/usePolicyVersions"
 import { usePolicyDetail } from "../hooks/usePolicies"
+import { SetExpirationDialog } from "../components/SetExpirationDialog"
+import { RoleGuard } from "@/features/auth/components/RoleGuard"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 
@@ -14,8 +17,13 @@ interface PolicyDetailLayoutProps {
 
 export function PolicyDetailLayout({ policyId }: PolicyDetailLayoutProps) {
     const [showHistory, setShowHistory] = useState(false)
-    const { data: currentPolicy, isLoading, isError } = usePolicyDetail(policyId)
+    const { allVersions } = usePolicyVersions(policyId)
+    const { data: policy, isLoading, isError } = usePolicyDetail(policyId)
 
+    const currentPolicy = policy || (allVersions.length > 0 ? allVersions[allVersions.length - 1] : null)
+
+    const isExpired = currentPolicy?.expiresAt ? new Date(currentPolicy.expiresAt) <= new Date() : false
+    const isActive = currentPolicy?.isValid && !isExpired
     if (isLoading) {
         return (
             <div className="flex h-[50vh] items-center justify-center">
@@ -69,6 +77,15 @@ export function PolicyDetailLayout({ policyId }: PolicyDetailLayoutProps) {
                                 Edytuj
                             </Button>
                         </Link>
+                        {currentPolicy && (
+                            <RoleGuard allowedRoles={["compliance_officer", "admin"]}>
+                                <SetExpirationDialog
+                                    policyId={parseInt(policyId, 10)}
+                                    policyName={currentPolicy.name}
+                                    currentExpiresAt={currentPolicy.expiresAt}
+                                />
+                            </RoleGuard>
+                        )}
                     </div>
                 </div>
 
@@ -83,9 +100,15 @@ export function PolicyDetailLayout({ policyId }: PolicyDetailLayoutProps) {
                                     <CardTitle className="text-xl">{currentPolicy.name}</CardTitle>
                                 </div>
                                 {currentPolicy.isValid && (
-                                    <span className="bg-green-100 text-green-700 border border-green-200 text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5 shadow-sm">
-                                        <CheckCircle2 className="size-3.5" /> Aktywna
-                                    </span>
+                                    isActive ? (
+                                        <span className="bg-green-100 text-green-700 border border-green-200 text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5 shadow-sm">
+                                            <CheckCircle2 className="size-3.5" /> Aktywna
+                                        </span>
+                                    ) : isExpired ? (
+                                        <span className="bg-amber-100 text-amber-700 border border-amber-200 text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5 shadow-sm">
+                                            <CalendarOff className="size-3.5" /> Wygasła
+                                        </span>
+                                    ) : null
                                 )}
                             </div>
                         </CardHeader>

@@ -26,6 +26,14 @@ const optionalDate = z.preprocess(
     z.string().optional()
 ).optional()
 
+const requiredDate = z.preprocess(
+    (val) => {
+        if (val === "" || val === undefined || val === null) return undefined;
+        return val;
+    },
+    z.string({ message: "Pole jest wymagane" }).min(1, "Pole jest wymagane")
+)
+
 export const createPolicySchema = z.object({
     name: z
         .string()
@@ -36,7 +44,7 @@ export const createPolicySchema = z.object({
         .max(500, "Opis może mieć maksymalnie 500 znaków")
         .optional(),
     categoryId: requiredNumber,
-    startsAt: optionalDate,
+    startsAt: requiredDate,
     expiresAt: optionalDate,
     minPrice: optionalNumber,
     maxPrice: optionalNumber,
