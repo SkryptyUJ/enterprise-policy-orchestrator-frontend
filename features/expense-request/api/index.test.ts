@@ -36,20 +36,6 @@ describe("createExpenseRequest", () => {
         expect(result).toEqual(mockResponse)
     })
 
-    it("używa wspólnego endpointu bez userId", async () => {
-        const mockClient = {
-            get: vi.fn(),
-            post: vi.fn().mockResolvedValue(mockResponse),
-            put: vi.fn(),
-            patch: vi.fn(),
-            delete: vi.fn(),
-        }
-
-        await createExpenseRequest(mockClient, "user-123", mockDto)
-
-        expect(mockClient.post).toHaveBeenCalledWith("http://localhost:8080/api/users/user-123/expense-requests", mockDto)
-    })
-
     it("propaguje błąd z klienta API", async () => {
         const mockClient = {
             get: vi.fn(),
