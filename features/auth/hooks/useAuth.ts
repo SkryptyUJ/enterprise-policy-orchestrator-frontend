@@ -26,7 +26,7 @@ export function useAuth(): { user: AuthUser | null; isLoading: boolean; error?: 
 
     return {
         user: {
-            id: user.sub ?? "",
+            id: user.sub?.replace("google-oauth2|", "") ?? "",
             email: user.email ?? "",
             name: user.name ?? "",
             roles,
