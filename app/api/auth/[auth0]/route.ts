@@ -1,3 +1,3 @@
-import { auth0 } from "@/lib/auth0";
+import { NextResponse } from "next/server"
 
-export const GET = auth0.handleAuth();
+export const GET = () => NextResponse.json({ mock: true })
