@@ -3,6 +3,7 @@ import {
     createExpenseRequest,
     fetchExpenseRequests,
     fetchExpenseRequestDetails,
+    submitManagerDecision,
     type CreateExpenseRequestDto,
 } from "./index"
 
@@ -15,9 +16,11 @@ describe("createExpenseRequest", () => {
     }
 
     const mockResponse = {
-        id: "abc-123",
+        id: 100,
+        userId: "user-123",
         ...mockDto,
-        createdAt: "2026-03-26T10:00:00Z",
+        submittedAt: "2026-03-26T10:00:00Z",
+        status: "ESCALATED",
     }
 
     it("wysyła POST na poprawny URL z danymi", async () => {
@@ -32,7 +35,7 @@ describe("createExpenseRequest", () => {
         const result = await createExpenseRequest(mockClient, "user-123", mockDto)
 
         expect(mockClient.post).toHaveBeenCalledOnce()
-        expect(mockClient.post).toHaveBeenCalledWith("http://localhost:8080/api/users/user-123/expense-requests", mockDto)
+        expect(mockClient.post).toHaveBeenCalledWith("/api/users/user-123/expense-requests", mockDto)
         expect(result).toEqual(mockResponse)
     })
 
@@ -45,7 +48,7 @@ describe("createExpenseRequest", () => {
             delete: vi.fn(),
         }
 
-        await expect(createExpenseRequest(mockClient, mockDto)).rejects.toThrow("Request failed: 500")
+        await expect(createExpenseRequest(mockClient, "user-123", mockDto)).rejects.toThrow("Request failed: 500")
     })
 })
 
@@ -59,9 +62,9 @@ describe("fetchExpenseRequests", () => {
             delete: vi.fn(),
         }
 
-        await fetchExpenseRequests(mockClient)
+        await fetchExpenseRequests(mockClient, "user-123")
 
-        expect(mockClient.get).toHaveBeenCalledWith("http://localhost:8080/api/expense-requests")
+        expect(mockClient.get).toHaveBeenCalledWith("/api/users/user-123/expense-requests")
     })
 })
 
@@ -77,7 +80,30 @@ describe("fetchExpenseRequestDetails", () => {
 
         await fetchExpenseRequestDetails(mockClient, "user-123", "exp-1")
 
-        expect(mockClient.get).toHaveBeenCalledWith("http://localhost:8080/api/user-123/expense-requests/exp-1")
+        expect(mockClient.get).toHaveBeenCalledWith("/api/users/user-123/expense-requests/exp-1")
+    })
+})
+
+describe("submitManagerDecision", () => {
+    it("wysyła POST manager-decision z wymaganym nagłówkiem i payloadem", async () => {
+        const mockClient = {
+            get: vi.fn(),
+            post: vi.fn().mockResolvedValue({ status: "APPROVED" }),
+            put: vi.fn(),
+            patch: vi.fn(),
+            delete: vi.fn(),
+        }
+
+        await submitManagerDecision(mockClient, "manager-1", 77, {
+            policyId: 12,
+            decision: "DECLINE",
+        })
+
+        expect(mockClient.post).toHaveBeenCalledWith(
+            "/api/users/manager-1/expense-requests/77/manager-decision",
+            { policyId: 12, decision: "DECLINE" },
+            { headers: { "X-User-Role": "Manager" } }
+        )
     })
 })
 

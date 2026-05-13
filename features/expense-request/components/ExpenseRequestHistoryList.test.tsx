@@ -56,20 +56,24 @@ describe("ExpenseRequestHistoryList", () => {
         mockedUseExpenseRequests.mockReturnValue({
             data: [
                 {
-                    id: "exp-1",
+                    id: 1,
+                    userId: "user-1",
                     amount: 123,
                     category: "Transport",
                     description: "Taxi",
                     expenseDate: "2026-03-20",
-                    createdAt: "2026-03-21T10:00:00Z",
+                    submittedAt: "2026-03-21T10:00:00Z",
+                    status: "ESCALATED",
                 },
                 {
-                    id: "exp-2",
+                    id: 2,
+                    userId: "user-1",
                     amount: 45,
                     category: "Wyżywienie",
                     description: "Lunch",
                     expenseDate: "2026-03-22",
-                    createdAt: "2026-03-22T10:00:00Z",
+                    submittedAt: "2026-03-22T10:00:00Z",
+                    status: "APPROVED",
                 },
             ],
             isLoading: false,
@@ -88,27 +92,31 @@ describe("ExpenseRequestHistoryList", () => {
         const sorted = sortRequests(
             [
                 {
-                    id: "exp-1",
+                    id: 1,
+                    userId: "user-1",
                     amount: 123,
                     category: "Transport",
                     description: "Taxi",
                     expenseDate: "2026-03-20",
-                    createdAt: "2026-03-21T10:00:00Z",
+                    submittedAt: "2026-03-21T10:00:00Z",
+                    status: "ESCALATED",
                 },
                 {
-                    id: "exp-2",
+                    id: 2,
+                    userId: "user-1",
                     amount: 45,
                     category: "Wyżywienie",
                     description: "Lunch",
                     expenseDate: "2026-03-22",
-                    createdAt: "2026-03-22T10:00:00Z",
+                    submittedAt: "2026-03-22T10:00:00Z",
+                    status: "APPROVED",
                 },
             ],
             "amount",
             "asc"
         )
 
-        expect(sorted.map((item) => item.id)).toEqual(["exp-2", "exp-1"])
+        expect(sorted.map((item) => item.id)).toEqual([2, 1])
     })
 
     it("po kliknieciu elementu ustawia id do pobrania szczegolow", async () => {
@@ -117,12 +125,14 @@ describe("ExpenseRequestHistoryList", () => {
         mockedUseExpenseRequests.mockReturnValue({
             data: [
                 {
-                    id: "exp-1",
+                    id: 1,
+                    userId: "user-1",
                     amount: 123,
                     category: "Transport",
                     description: "Taxi",
                     expenseDate: "2026-03-20",
-                    createdAt: "2026-03-21T10:00:00Z",
+                    submittedAt: "2026-03-21T10:00:00Z",
+                    status: "ESCALATED",
                 },
             ],
             isLoading: false,
@@ -140,7 +150,7 @@ describe("ExpenseRequestHistoryList", () => {
         await user.click(screen.getByRole("button", { name: /taxi/i }))
 
         await waitFor(() => {
-            expect(mockedUseExpenseRequestDetails).toHaveBeenLastCalledWith("exp-1")
+            expect(mockedUseExpenseRequestDetails).toHaveBeenLastCalledWith(1)
         })
     })
 })
