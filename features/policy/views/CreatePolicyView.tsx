@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useForm, type Resolver } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -9,9 +9,9 @@ import { Form } from "@/components/ui/form"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
-import { InputField, TextareaField } from "@/components/shared"
+import { InputField, SelectField, TextareaField } from "@/components/shared"
 import { createPolicySchema, type CreatePolicyFormValues } from "../schemas/createPolicy.schema"
-import { useCreatePolicy } from "../hooks/usePolicies"
+import { useCreatePolicy, usePolicyCategories } from "../hooks/usePolicies"
 
 function toLocalDatetimeString(date: Date): string {
     const pad = (n: number) => String(n).padStart(2, "0")
@@ -39,6 +39,7 @@ const POLICY_FEATURES = [
 export function CreatePolicyView() {
     const router = useRouter()
     const { mutate: createPolicy, isPending, isError, error } = useCreatePolicy()
+    const { data: categoryOptionsData, isLoading: isCategoryOptionsLoading } = usePolicyCategories()
     const [applyNow, setApplyNow] = useState(false)
 
     const form = useForm<CreatePolicyFormValues>({
@@ -46,6 +47,32 @@ export function CreatePolicyView() {
         defaultValues: { name: "", description: "" } as never,
         mode: "onTouched",
     })
+
+    const categoryOptions = useMemo(
+        () =>
+            (categoryOptionsData ?? []).map((option) => ({
+                label: option.label,
+                value: option.value,
+            })),
+        [categoryOptionsData]
+    )
+
+    const selectedCategoryId = form.watch("categoryId")
+
+    useEffect(() => {
+        if (selectedCategoryId === undefined || selectedCategoryId === null || selectedCategoryId === "") {
+            return
+        }
+
+        const nextCategory = Number(selectedCategoryId)
+        if (Number.isNaN(nextCategory)) {
+            return
+        }
+
+        if (form.getValues("category") !== nextCategory) {
+            form.setValue("category", nextCategory as never, { shouldValidate: true })
+        }
+    }, [selectedCategoryId, form])
 
     function handleApplyNowChange(checked: boolean) {
         setApplyNow(checked)
@@ -104,6 +131,8 @@ export function CreatePolicyView() {
 
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit as never)} className="space-y-6">
+                            <input type="hidden" {...form.register("category")} />
+
                             <InputField<CreatePolicyFormValues>
                                 name="name"
                                 label="Nazwa polityki"
@@ -133,18 +162,13 @@ export function CreatePolicyView() {
                                 />
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                <InputField<CreatePolicyFormValues>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <SelectField<CreatePolicyFormValues>
                                     name="categoryId"
-                                    type="number"
-                                    label="ID Kategorii"
-                                    placeholder="np. 1"
-                                />
-                                <InputField<CreatePolicyFormValues>
-                                    name="category"
-                                    type="number"
                                     label="Kategoria"
-                                    placeholder="np. 1"
+                                    placeholder={isCategoryOptionsLoading ? "Ładowanie kategorii..." : "Wybierz kategorię"}
+                                    options={categoryOptions}
+                                    disabled={isCategoryOptionsLoading || categoryOptions.length === 0}
                                 />
                                 <InputField<CreatePolicyFormValues>
                                     name="authorizedRole"

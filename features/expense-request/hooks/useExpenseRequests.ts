@@ -22,7 +22,7 @@ export function useExpenseRequests() {
         queryKey: expenseRequestKeys.list(),
         queryFn: () => {
             if (!user) throw new Error("Brak zalogowanego użytkownika")
-            return fetchExpenseRequests(client)
+            return fetchExpenseRequests(client, user.id)
         },
         enabled: Boolean(user),
     })

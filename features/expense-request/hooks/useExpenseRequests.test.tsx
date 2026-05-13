@@ -47,7 +47,7 @@ describe("useExpenseRequests", () => {
 
 		await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
-		expect(mockGet).toHaveBeenCalledWith("http://localhost:8080/api/expense-requests")
+		expect(mockGet).toHaveBeenCalledWith("http://localhost:8080/api/users/1/expense-requests")
 	})
 
 	it("pobiera szczegoly wskazanego wniosku", async () => {
@@ -59,7 +59,7 @@ describe("useExpenseRequests", () => {
 
 		await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
-		expect(mockGet).toHaveBeenCalledWith("http://localhost:8080/api/1/expense-requests/exp-1")
+		expect(mockGet).toHaveBeenCalledWith("http://localhost:8080/api/users/1/expense-requests/exp-1")
 	})
 })
 

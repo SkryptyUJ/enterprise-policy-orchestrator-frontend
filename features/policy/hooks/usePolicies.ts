@@ -1,7 +1,7 @@
 "use client"
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { fetchPolicies, fetchPoliciesByUser, createPolicy, getPolicyById, updatePolicy, getAllPolicies, setPolicyExpiration, CreatePolicyDto, SetPolicyExpirationDto } from "../api"
+import { fetchPolicies, fetchPoliciesByUser, createPolicy, getPolicyById, updatePolicy, getAllPolicies, setPolicyExpiration, fetchCategoryOptions, CreatePolicyDto, SetPolicyExpirationDto } from "../api"
 import { useApiClient } from "@/lib/useApiClient"
 import { useAuth } from "@/features/auth/hooks/useAuth"
 
@@ -9,6 +9,7 @@ export const policyKeys = {
     all: ["policies"] as const,
     byUser: (userId: string) => ["policies", "user", userId] as const,
     detail: (id: string) => ["policies", id] as const,
+    categories: ["categories"] as const,
 }
 
 export function usePolicies() {
@@ -17,6 +18,16 @@ export function usePolicies() {
     return useQuery({
         queryKey: policyKeys.all,
         queryFn: () => fetchPolicies(client),
+    })
+}
+
+export function usePolicyCategories() {
+    const client = useApiClient()
+
+    return useQuery({
+        queryKey: policyKeys.categories,
+        queryFn: () => fetchCategoryOptions(client),
+        staleTime: 5 * 60 * 1000,
     })
 }
 

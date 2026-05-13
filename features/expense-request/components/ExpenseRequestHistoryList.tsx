@@ -19,6 +19,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select"
+import { Badge } from "@/components/ui/badge"
 import type { ExpenseRequest } from "../api"
 import { useExpenseRequestDetails, useExpenseRequests } from "../hooks/useExpenseRequests"
 import { ExpenseRequestDetailsSheet } from "./ExpenseRequestDetailsSheet"
@@ -53,6 +54,21 @@ function formatCurrency(value: number) {
 
 function formatDate(value: string) {
 	return new Date(value).toLocaleDateString("pl-PL")
+}
+
+function getStatusVariant(status: string | undefined) {
+	const normalized = status?.toUpperCase()
+	if (normalized === "APPROVED") return "default" as const
+	if (normalized === "REJECTED") return "destructive" as const
+	return "secondary" as const
+}
+
+function getStatusLabel(status: string | undefined) {
+	const normalized = status?.toUpperCase()
+	if (normalized === "APPROVED") return "Zatwierdzony"
+	if (normalized === "REJECTED") return "Odrzucony"
+	if (normalized === "PENDING") return "Oczekuje"
+	return status ?? "Brak"
 }
 
 export function sortRequests(requests: ExpenseRequest[], sortBy: SortField, sortOrder: SortOrder) {
@@ -239,11 +255,12 @@ export function ExpenseRequestHistoryList() {
 					</div>
 
 					<div className="rounded-md border">
-						<div className="grid grid-cols-[1.4fr_1fr_1fr_0.9fr] gap-4 border-b bg-muted/30 px-4 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+						<div className="grid grid-cols-[1.4fr_1fr_1fr_0.9fr_0.8fr] gap-4 border-b bg-muted/30 px-4 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
 							<span>Opis</span>
 							<span>Kategoria</span>
 							<span>Data wydatku</span>
 							<span>Kwota</span>
+							<span>Status</span>
 						</div>
 
 						{isLoading && (
@@ -269,12 +286,17 @@ export function ExpenseRequestHistoryList() {
 									key={request.id}
 									type="button"
 									onClick={() => setSelectedExpenseId(request.id)}
-									className="grid w-full cursor-pointer grid-cols-[1.4fr_1fr_1fr_0.9fr] gap-4 border-b px-4 py-3 text-left text-sm transition-colors hover:bg-muted/40 last:border-b-0"
+									className="grid w-full cursor-pointer grid-cols-[1.4fr_1fr_1fr_0.9fr_0.8fr] gap-4 border-b px-4 py-3 text-left text-sm transition-colors hover:bg-muted/40 last:border-b-0"
 								>
 									<span className="line-clamp-2">{request.description}</span>
 									<span>{request.category}</span>
 									<span>{formatDate(request.expenseDate)}</span>
 									<span className="font-medium">{formatCurrency(request.amount)}</span>
+									<span>
+										<Badge variant={getStatusVariant(request.status)}>
+											{getStatusLabel(request.status)}
+										</Badge>
+									</span>
 								</button>
 							))}
 					</div>
