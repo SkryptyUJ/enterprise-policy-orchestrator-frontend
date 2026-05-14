@@ -7,21 +7,20 @@ import { useAllPolicies, useSetPolicyExpiration } from "./usePolicies"
 const mockPolicies = [
     {
         id: 1,
-        policyId: null,
-        authorUserId: 1,
+        policyId: "POL-1",
+        authorUserId: "auth0|00000001",
         categoryId: 1,
         name: "Polityka podróży",
         description: null,
         version: 1,
-        createdAt: "2026-01-01T00:00:00Z",
-        updatedAt: "2026-01-01T00:00:00Z",
-        startsAt: "2026-01-01T00:00:00Z",
+        createdAt: "2026-01-01T00:00:00",
+        updatedAt: "2026-01-01T00:00:00",
+        startsAt: "2026-01-01T00:00:00",
         expiresAt: null,
         minPrice: null,
         maxPrice: null,
-        category: 1,
+        category: "TRAVEL",
         authorizedRole: 2,
-        isValid: true,
     },
 ]
 

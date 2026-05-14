@@ -4,33 +4,32 @@ type ApiClient = ReturnType<typeof createApiClient>
 
 export interface Policy {
     id: number
-    policyId: number | null
-    authorUserId: number | null
-    categoryId: number | null
+    policyId: string
+    authorUserId: string
+    categoryId: number
     name: string
     description: string | null
-    version: number | null
-    createdAt: string | null
-    updatedAt: string | null
-    startsAt: string | null
+    version: number
+    createdAt: string
+    updatedAt: string
+    startsAt: string
     expiresAt: string | null
     minPrice: number | null
     maxPrice: number | null
-    category: number | null
+    category: string
     authorizedRole: number | null
-    isValid: boolean | null
 }
 
 export interface CreatePolicyDto {
     policyId?: string
-    categoryId?: number
+    categoryId: number
     name: string
     description?: string
-    startsAt?: string
+    startsAt: string
     expiresAt?: string
     minPrice?: number
     maxPrice?: number
-    category?: number
+    category: string
     authorizedRole?: number
 }
 

@@ -142,9 +142,9 @@ export function CreatePolicyView() {
                                 />
                                 <InputField<CreatePolicyFormValues>
                                     name="category"
-                                    type="number"
+                                    type="text"
                                     label="Kategoria"
-                                    placeholder="np. 1"
+                                    placeholder="np. TRAVEL"
                                 />
                                 <InputField<CreatePolicyFormValues>
                                     name="authorizedRole"

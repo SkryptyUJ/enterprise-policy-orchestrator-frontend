@@ -13,21 +13,20 @@ function createMockClient() {
 
 const mockPolicy: Policy = {
     id: 1,
-    policyId: null,
-    authorUserId: 1,
+    policyId: "POL-1",
+    authorUserId: "1",
     categoryId: 1,
     name: "Polityka podróży",
     description: "Zasady rozliczania podróży służbowych",
     version: 1,
-    createdAt: "2026-01-01T00:00:00Z",
-    updatedAt: "2026-01-01T00:00:00Z",
-    startsAt: "2026-01-01T00:00:00Z",
+    createdAt: "2026-01-01T00:00:00",
+    updatedAt: "2026-01-01T00:00:00",
+    startsAt: "2026-01-01T00:00:00",
     expiresAt: null,
     minPrice: 100,
     maxPrice: 5000,
-    category: 1,
+    category: "TRAVEL",
     authorizedRole: 2,
-    isValid: true,
 }
 
 describe("getAllPolicies", () => {
@@ -35,7 +34,7 @@ describe("getAllPolicies", () => {
         const client = createMockClient()
         client.get.mockResolvedValue([mockPolicy])
 
-        const result = await getAllPolicies(client, 1)
+        const result = await getAllPolicies(client, "1")
 
         expect(client.get).toHaveBeenCalledOnce()
         expect(client.get).toHaveBeenCalledWith("/api/users/1/policies")
@@ -46,7 +45,7 @@ describe("getAllPolicies", () => {
         const client = createMockClient()
         client.get.mockResolvedValue([])
 
-        await getAllPolicies(client, 42)
+        await getAllPolicies(client, "42")
 
         expect(client.get).toHaveBeenCalledWith("/api/users/42/policies")
     })
@@ -55,7 +54,7 @@ describe("getAllPolicies", () => {
         const client = createMockClient()
         client.get.mockRejectedValue(new Error("Request failed: 500"))
 
-        await expect(getAllPolicies(client, 1)).rejects.toThrow("Request failed: 500")
+        await expect(getAllPolicies(client, "1")).rejects.toThrow("Request failed: 500")
     })
 })
 
@@ -69,7 +68,7 @@ describe("setPolicyExpiration", () => {
         const updatedPolicy = { ...mockPolicy, expiresAt: expirationDto.expiresAt }
         client.patch.mockResolvedValue(updatedPolicy)
 
-        const result = await setPolicyExpiration(client, 1, 5, expirationDto)
+        const result = await setPolicyExpiration(client, "1", 5, expirationDto)
 
         expect(client.patch).toHaveBeenCalledOnce()
         expect(client.patch).toHaveBeenCalledWith(
@@ -83,7 +82,7 @@ describe("setPolicyExpiration", () => {
         const client = createMockClient()
         client.patch.mockResolvedValue(mockPolicy)
 
-        await setPolicyExpiration(client, 42, 99, expirationDto)
+        await setPolicyExpiration(client, "42", 99, expirationDto)
 
         expect(client.patch).toHaveBeenCalledWith(
             "/api/users/42/policies/99/expiration",
@@ -95,7 +94,7 @@ describe("setPolicyExpiration", () => {
         const client = createMockClient()
         client.patch.mockRejectedValue(new Error("Request failed: 404"))
 
-        await expect(setPolicyExpiration(client, 1, 999, expirationDto)).rejects.toThrow(
+        await expect(setPolicyExpiration(client, "1", 999, expirationDto)).rejects.toThrow(
             "Request failed: 404"
         )
     })

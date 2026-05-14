@@ -15,10 +15,9 @@ const FIELD_LABELS: Partial<Record<keyof Policy, string>> = {
     expiresAt: "Do",
     minPrice: "Cena min.",
     maxPrice: "Cena max.",
-    category: "ID Kategorii",
-    categoryId: "Kategoria",
+    category: "Kategoria",
+    categoryId: "ID Kategorii",
     authorizedRole: "Rola docelowa",
-    isValid: "Aktywna (Status)"
 }
 
 function getModifiedFields(current: Policy, previous?: Policy) {
@@ -26,7 +25,7 @@ function getModifiedFields(current: Policy, previous?: Policy) {
     
     const diff: { key: string, label: string, oldVal: any, newVal: any }[] = []
     const keysToCheck: (keyof Policy)[] = [
-        "name", "description", "startsAt", "expiresAt", "minPrice", "maxPrice", "category", "categoryId", "authorizedRole", "isValid"
+        "name", "description", "startsAt", "expiresAt", "minPrice", "maxPrice", "category", "categoryId", "authorizedRole"
     ]
 
     for (const key of keysToCheck) {
@@ -143,8 +142,8 @@ export function PolicyHistoryView() {
                                             </h4>
                                             <div className="grid grid-cols-2 md:grid-cols-4 gap-y-4 gap-x-6 text-sm">
                                                 <div className="space-y-1">
-                                                    <span className="text-xs text-muted-foreground block">Aktywna</span>
-                                                    <span className="font-semibold">{version.isValid ? "Tak" : "Nie"}</span>
+                                                    <span className="text-xs text-muted-foreground block">Policy ID</span>
+                                                    <span className="font-semibold">{version.policyId}</span>
                                                 </div>
                                                 <div className="space-y-1">
                                                     <span className="text-xs text-muted-foreground block">User ID (Autor)</span>
