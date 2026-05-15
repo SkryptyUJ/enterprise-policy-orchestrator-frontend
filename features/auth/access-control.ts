@@ -1,10 +1,4 @@
-const auth0Namespace = process.env.NEXT_PUBLIC_AUTH0_NAMESPACE;
-
-if (!auth0Namespace) {
-    throw new Error("Missing NEXT_PUBLIC_AUTH0_NAMESPACE environment variable")
-}
-
-export const AUTH0_NAMESPACE = auth0Namespace;
+export const AUTH0_NAMESPACE = process.env.NEXT_PUBLIC_AUTH0_NAMESPACE || "";
 
 export const ROLES = [
     "admin",
