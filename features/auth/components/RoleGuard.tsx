@@ -1,28 +1,31 @@
 "use client";
 
 import { ReactNode } from "react";
-import { useAuth, Role } from "../hooks/useAuth";
+import { canAccess, type Role } from "../access-control";
+import { useAuth } from "../hooks/useAuth";
 
 interface RoleGuardProps {
     children: ReactNode;
-    allowedRoles: Role[];
+    allowedRoles?: Role[];
     fallback?: ReactNode;
 }
 
-export function RoleGuard({ children, allowedRoles, fallback = null }: RoleGuardProps) {
+export function RoleGuard({
+    children,
+    allowedRoles,
+    fallback = null,
+}: RoleGuardProps) {
     const { user, isLoading } = useAuth();
 
     if (isLoading) {
-        return null; // or a spinner
+        return null;
     }
 
     if (!user) {
         return <>{fallback}</>;
     }
 
-    const hasAccess = allowedRoles.some((role) => user.roles.includes(role));
-
-    if (!hasAccess) {
+    if (!canAccess(user, allowedRoles)) {
         return <>{fallback}</>;
     }
 

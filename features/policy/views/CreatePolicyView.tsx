@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label"
 import { InputField, SelectField, TextareaField } from "@/components/shared"
 import { createPolicySchema, type CreatePolicyFormValues } from "../schemas/createPolicy.schema"
 import { useCreatePolicy, usePolicyCategories } from "../hooks/usePolicies"
+import { useUser } from "@auth0/nextjs-auth0"
 
 function toLocalDatetimeString(date: Date): string {
     const pad = (n: number) => String(n).padStart(2, "0")
@@ -85,7 +86,7 @@ export function CreatePolicyView() {
 
     function onSubmit(values: CreatePolicyFormValues) {
         createPolicy(values, {
-            onSuccess: () => router.push("/dashboard"),
+            onSuccess: () => router.push("/policy/all"),
         })
     }
 
@@ -117,7 +118,7 @@ export function CreatePolicyView() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-                
+
                 {/* Kolumna lewa — formularz */}
                 <div className="lg:col-span-7 xl:col-span-8 bg-card border rounded-2xl shadow-sm p-6 sm:p-8">
                     {/* Numer kroku (opcjonalnie jako sekcja robocza) */}
@@ -244,7 +245,7 @@ export function CreatePolicyView() {
                             <Info className="size-4" />
                             Kluczowe funkcje
                         </div>
-                        
+
                         <div className="space-y-6">
                             {POLICY_FEATURES.map(({ icon: Icon, title, description }) => (
                                 <div key={title} className="flex gap-4 group">

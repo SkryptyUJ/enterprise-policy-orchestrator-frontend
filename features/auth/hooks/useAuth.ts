@@ -1,14 +1,17 @@
 "use client"
 
 import { useUser } from "@auth0/nextjs-auth0/client"
-
-export type Role = "admin" | "employee" | "manager" | "compliance_officer";
+import {
+    AUTH0_NAMESPACE,
+    type Role,
+    normalizeRoles,
+} from "../access-control";
 
 export interface AuthUser {
     id: string
     email: string
     name: string
-    roles: Role[]  // A user can have multiple roles
+    roles: Role[]
 }
 
 export function useAuth(): { user: AuthUser | null; isLoading: boolean; error?: Error | null } {
@@ -18,15 +21,13 @@ export function useAuth(): { user: AuthUser | null; isLoading: boolean; error?: 
         return { user: null, isLoading, error }
     }
 
-    // Role pochodzą z custom claim "https://policy-orchestrator.com/roles"
-    // Na ten moment ZAMOCKOWANE - użytkownik z Auth0 dostaje lokalnie wszystkie możliwe role!
-    // Docelowo: const rawRoles = user["https://policy-orchestrator.com/roles"] as string[] | undefined;
-    const rawRoles = ["admin", "employee", "manager", "compliance_officer"];
-    const roles = Array.isArray(rawRoles) ? (rawRoles as Role[]) : [];
+    const rawRoles = user[`${AUTH0_NAMESPACE}/roles`];
+    const roles = normalizeRoles(rawRoles);
+
 
     return {
         user: {
-            id: user.sub?.replace("google-oauth2|", "") ?? "",
+            id: user.sub ?? "",
             email: user.email ?? "",
             name: user.name ?? "",
             roles,

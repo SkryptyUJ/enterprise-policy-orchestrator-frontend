@@ -71,14 +71,16 @@ export function PolicyDetailLayout({ policyId }: PolicyDetailLayoutProps) {
                             <History className="size-4" />
                             {showHistory ? "Ukryj historię" : "Zobacz historię"}
                         </Button>
-                        <Link href={`/policy/${policyId}/edit`} passHref>
-                            <Button className="gap-2 shrink-0 transition-all">
-                                <Pencil className="size-4" />
-                                Edytuj
-                            </Button>
-                        </Link>
+                        <RoleGuard allowedRoles={["admin"]}>
+                            <Link href={`/policy/${policyId}/edit`} passHref>
+                                <Button className="gap-2 shrink-0 transition-all">
+                                    <Pencil className="size-4" />
+                                    Edytuj
+                                </Button>
+                            </Link>
+                        </RoleGuard>
                         {currentPolicy && (
-                            <RoleGuard allowedRoles={["compliance_officer", "admin"]}>
+                            <RoleGuard allowedRoles={["admin"]}>
                                 <SetExpirationDialog
                                     policyId={parseInt(policyId, 10)}
                                     policyName={currentPolicy.name}

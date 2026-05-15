@@ -1,5 +1,7 @@
 import { FileText } from "lucide-react"
 import { PolicyList } from "@/features/policy/components/PolicyList"
+import { AccessDenied } from "@/features/auth/components/AccessDenied"
+import { RoleGuard } from "@/features/auth/components/RoleGuard"
 
 export const metadata = {
     title: "Wszystkie polityki — Policy Orchestrator",
@@ -7,20 +9,27 @@ export const metadata = {
 
 export default function AllPoliciesPage() {
     return (
-        <div className="p-6 flex flex-col gap-4">
-            <div className="flex items-center justify-between mb-8">
-                <div className="flex items-center gap-3">
-                    <div className="size-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <FileText className="size-5 text-primary" />
-                    </div>
-                    <div>
-                        <h1 className="text-2xl font-bold tracking-tight">Wszystkie polityki</h1>
-                        <p className="text-sm text-muted-foreground">Przeglądaj i zarządzaj wszystkimi politykami w systemie. Dezaktywowane polityki pozostają widoczne w historii.</p>
+        <RoleGuard
+            allowedRoles={["employee", "manager", "compliance_officer", "admin"]}
+            fallback={
+                <AccessDenied description="Nie masz uprawnień do przeglądania polityk." />
+            }
+        >
+            <div className="p-6 flex flex-col gap-4">
+                <div className="flex items-center justify-between mb-8">
+                    <div className="flex items-center gap-3">
+                        <div className="size-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                            <FileText className="size-5 text-primary" />
+                        </div>
+                        <div>
+                            <h1 className="text-2xl font-bold tracking-tight">Wszystkie polityki</h1>
+                            <p className="text-sm text-muted-foreground">Przeglądaj i zarządzaj wszystkimi politykami w systemie. Dezaktywowane polityki pozostają widoczne w historii.</p>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <PolicyList />
-        </div>
+                <PolicyList />
+            </div>
+        </RoleGuard>
     )
 }
