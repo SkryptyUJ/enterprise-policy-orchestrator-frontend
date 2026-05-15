@@ -9,7 +9,22 @@ import {
 } from "@/components/ui/sheet"
 import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Badge } from "@/components/ui/badge"
 import type { ExpenseRequestDetails } from "../api"
+import type { Policy } from "@/features/policy/api"
+
+function formatPolicy(policy: Policy | null | undefined) {
+    if (!policy) return "-"
+    const version = policy.version != null ? ` (wersja ${policy.version})` : ""
+    return `${policy.name}${version}`
+}
+
+function getDecisionVariant(status: string | undefined) {
+    const normalized = status?.toUpperCase()
+    if (normalized === "APPROVED") return "default" as const
+    if (normalized === "REJECTED") return "destructive" as const
+    return "secondary" as const
+}
 
 type ExpenseRequestDetailsSheetProps = {
     open: boolean
@@ -91,10 +106,32 @@ export function ExpenseRequestDetailsSheet({
                             <DetailRow label="Zatwierdzono" value={formatDateTime(details.approvedAt)} />
                             <DetailRow label="Odrzucono" value={formatDateTime(details.rejectedAt)} />
                             <Separator className="my-2" />
-                            <DetailRow
-                                label="Powod odrzucenia"
-                                value={details.rejectionReason ?? "-"}
-                            />
+                            <div className="space-y-3 py-2 text-sm">
+                                <div className="flex items-center gap-2">
+                                    <Badge variant={getDecisionVariant(details.status)}>
+                                        Decyzja Managera
+                                    </Badge>
+                                    <span className="text-muted-foreground">{details.status ?? "Brak"}</span>
+                                </div>
+                                <DetailRow
+                                    label="Zastosowana polityka"
+                                    value={formatPolicy(details.appliedPolicy)}
+                                />
+                                <DetailRow
+                                    label="Decyzję podjął"
+                                    value={details.decidedBy ?? "-"}
+                                />
+                                <DetailRow
+                                    label="Data decyzji"
+                                    value={formatDateTime(details.decidedAt)}
+                                />
+                                <div className="space-y-2">
+                                    <p className="text-muted-foreground">Uzasadnienie decyzji</p>
+                                    <p className="rounded-md border bg-muted/20 p-3 leading-relaxed whitespace-pre-line">
+                                        {details.decisionRationale ?? details.rejectionReason ?? "Brak uzasadnienia."}
+                                    </p>
+                                </div>
+                            </div>
                             <Separator className="my-2" />
                             <div className="space-y-2 py-2 text-sm">
                                 <p className="text-muted-foreground">Opis</p>

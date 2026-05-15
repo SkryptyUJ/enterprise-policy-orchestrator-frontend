@@ -45,7 +45,7 @@ describe("createExpenseRequest", () => {
             delete: vi.fn(),
         }
 
-        await expect(createExpenseRequest(mockClient, mockDto)).rejects.toThrow("Request failed: 500")
+        await expect(createExpenseRequest(mockClient, "user-123", mockDto)).rejects.toThrow("Request failed: 500")
     })
 })
 
@@ -59,9 +59,9 @@ describe("fetchExpenseRequests", () => {
             delete: vi.fn(),
         }
 
-        await fetchExpenseRequests(mockClient)
+        await fetchExpenseRequests(mockClient, "user-123")
 
-        expect(mockClient.get).toHaveBeenCalledWith("http://localhost:8080/api/expense-requests")
+        expect(mockClient.get).toHaveBeenCalledWith("http://localhost:8080/api/users/user-123/expense-requests")
     })
 })
 
@@ -77,7 +77,7 @@ describe("fetchExpenseRequestDetails", () => {
 
         await fetchExpenseRequestDetails(mockClient, "user-123", "exp-1")
 
-        expect(mockClient.get).toHaveBeenCalledWith("http://localhost:8080/api/user-123/expense-requests/exp-1")
+        expect(mockClient.get).toHaveBeenCalledWith("http://localhost:8080/api/users/user-123/expense-requests/exp-1")
     })
 })
 

@@ -1,4 +1,5 @@
 import type { createApiClient } from "@/lib/apiClient"
+import type { Policy } from "@/features/policy/api"
 
 type ApiClient = ReturnType<typeof createApiClient>
 
@@ -17,6 +18,10 @@ export interface ExpenseRequest {
     expenseDate: string
     createdAt: string
     status?: string
+    appliedPolicy?: Policy | null
+    decisionRationale?: string | null
+    decidedBy?: string | null
+    decidedAt?: string | null
 }
 
 export interface ExpenseRequestDetails extends ExpenseRequest {
@@ -28,8 +33,8 @@ export interface ExpenseRequestDetails extends ExpenseRequest {
 
 const API_BASE = "http://localhost:8080/api"
 
-export function fetchExpenseRequests(client: ApiClient) {
-    return client.get<ExpenseRequest[]>(`${API_BASE}/expense-requests`)
+export function fetchExpenseRequests(client: ApiClient, userId: string) {
+    return client.get<ExpenseRequest[]>(`${API_BASE}/users/${userId}/expense-requests`)
 }
 
 export function fetchExpenseRequestDetails(
@@ -37,7 +42,7 @@ export function fetchExpenseRequestDetails(
     userId: string,
     expenseRequestId: string
 ) {
-    return client.get<ExpenseRequestDetails>(`${API_BASE}/${userId}/expense-requests/${expenseRequestId}`)
+    return client.get<ExpenseRequestDetails>(`${API_BASE}/users/${userId}/expense-requests/${expenseRequestId}`)
 }
 
 export function createExpenseRequest(
