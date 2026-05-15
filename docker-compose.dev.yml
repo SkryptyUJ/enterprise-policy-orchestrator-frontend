@@ -1,0 +1,22 @@
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    # Run the container as root in dev so the container can create and write
+    # to mounted volumes like /app/.next and /app/node_modules.
+    user: "0:0"
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    env_file:
+      - .env.local
+    environment:
+      NODE_ENV: development
+    restart: unless-stopped
+    command: npm run dev
+

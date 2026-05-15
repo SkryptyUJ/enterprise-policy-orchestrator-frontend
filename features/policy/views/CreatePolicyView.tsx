@@ -61,7 +61,7 @@ export function CreatePolicyView() {
     const selectedCategoryId = form.watch("categoryId")
 
     useEffect(() => {
-        if (selectedCategoryId === undefined || selectedCategoryId === null || selectedCategoryId === "") {
+        if (selectedCategoryId === undefined || selectedCategoryId === null) {
             return
         }
 
