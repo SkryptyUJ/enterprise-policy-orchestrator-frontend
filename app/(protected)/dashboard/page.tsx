@@ -40,7 +40,7 @@ export default function DashboardPage() {
                 }
             >
                 <div className="rounded-xl border bg-card p-6 text-sm text-muted-foreground">
-                    Wybierz sekcję z menu po lewej stronie, aby przejść do dozwolonych funkcji.
+                    Wybierz sekcję z menu po lewej stronie.
                 </div>
             </RoleGuard>
         </div>
