@@ -37,8 +37,18 @@ export interface SetPolicyExpirationDto {
     expiresAt: string
 }
 
+export interface CategoryOption {
+    id: number
+    value: string
+    label: string
+}
+
 export function fetchPolicies(client: ApiClient) {
     return client.get<Policy[]>("/api/policies")
+}
+
+export function fetchCategoryOptions(client: ApiClient) {
+    return client.get<CategoryOption[]>("/api/categories")
 }
 
 export function fetchPoliciesByUser(client: ApiClient, userId: string) {

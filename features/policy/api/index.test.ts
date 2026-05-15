@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest"
-import { getAllPolicies, setPolicyExpiration, type Policy, type SetPolicyExpirationDto } from "./index"
+import { fetchCategoryOptions, getAllPolicies, setPolicyExpiration, type Policy, type SetPolicyExpirationDto } from "./index"
 
 function createMockClient() {
     return {
@@ -55,6 +55,23 @@ describe("getAllPolicies", () => {
         client.get.mockRejectedValue(new Error("Request failed: 500"))
 
         await expect(getAllPolicies(client, "1")).rejects.toThrow("Request failed: 500")
+    })
+})
+
+describe("fetchCategoryOptions", () => {
+    it("wysyła GET na endpoint kategorii", async () => {
+        const client = createMockClient()
+        client.get.mockResolvedValue([
+            { id: 1, value: "1", label: "Sprzęt biurowy" },
+        ])
+
+        const result = await fetchCategoryOptions(client)
+
+        expect(client.get).toHaveBeenCalledOnce()
+        expect(client.get).toHaveBeenCalledWith("/api/categories")
+        expect(result).toEqual([
+            { id: 1, value: "1", label: "Sprzęt biurowy" },
+        ])
     })
 })
 

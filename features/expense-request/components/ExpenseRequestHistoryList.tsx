@@ -50,6 +50,7 @@ const STATUS_LABELS: Record<ExpenseRequest["status"], string> = {
 	ESCALATED: "Eskalowany",
 	APPROVED: "Zatwierdzony",
 	DECLINED: "Odrzucony",
+	CANCELLED: "Anulowany",
 }
 
 const STATUS_VARIANTS: Record<ExpenseRequest["status"], "secondary" | "destructive" | "outline"> = {
@@ -57,6 +58,7 @@ const STATUS_VARIANTS: Record<ExpenseRequest["status"], "secondary" | "destructi
 	ESCALATED: "secondary",
 	APPROVED: "secondary",
 	DECLINED: "destructive",
+	CANCELLED: "destructive",
 }
 
 function formatCurrency(value: number) {

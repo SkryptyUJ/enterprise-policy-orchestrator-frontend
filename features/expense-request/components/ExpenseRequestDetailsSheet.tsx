@@ -44,6 +44,7 @@ const STATUS_LABELS: Record<ExpenseRequest["status"], string> = {
     ESCALATED: "Eskalowany",
     APPROVED: "Zatwierdzony",
     DECLINED: "Odrzucony",
+    CANCELLED: "Anulowany",
 }
 
 const STATUS_VARIANTS: Record<ExpenseRequest["status"], "secondary" | "destructive" | "outline"> = {
@@ -51,6 +52,7 @@ const STATUS_VARIANTS: Record<ExpenseRequest["status"], "secondary" | "destructi
     ESCALATED: "secondary",
     APPROVED: "secondary",
     DECLINED: "destructive",
+    CANCELLED: "destructive",
 }
 
 function formatDate(value: string | null | undefined) {
@@ -80,6 +82,18 @@ function DetailRow({ label, value }: { label: string; value: string }) {
     )
 }
 
+function formatAppliedPolicy(details: ExpenseRequestDetails) {
+    if (details.appliedPolicy) {
+        return `${details.appliedPolicy.name} (${details.appliedPolicy.policyId})`
+    }
+
+    if (details.resolutionPolicyId !== null) {
+        return String(details.resolutionPolicyId)
+    }
+
+    return "-"
+}
+
 export function ExpenseRequestDetailsSheet({
     open,
     onOpenChange,
@@ -95,6 +109,14 @@ export function ExpenseRequestDetailsSheet({
     const isManager = user?.roles.includes("manager") ?? false
     const isEscalated = details?.status === "ESCALATED"
     const canTakeDecision = Boolean(details && isEscalated && isManager)
+    const showDecisionSummary = Boolean(
+        details &&
+            (details.appliedPolicy ||
+                details.decidedBy ||
+                details.decidedAt ||
+                details.decisionRationale ||
+                details.resolutionPolicyId !== null)
+    )
 
     useEffect(() => {
         if (!details || details.conflictingPolicies.length === 0) {
@@ -194,6 +216,28 @@ export function ExpenseRequestDetailsSheet({
                                 label="Polityka rozstrzygająca"
                                 value={details.resolutionPolicyId !== null ? String(details.resolutionPolicyId) : "-"}
                             />
+
+                            {showDecisionSummary && (
+                                <>
+                                    <Separator className="my-2" />
+                                    <div className="space-y-2 py-2 text-sm">
+                                        <p className="text-muted-foreground">Decyzja managera</p>
+                                        <DetailRow
+                                            label="Zastosowana polityka"
+                                            value={formatAppliedPolicy(details)}
+                                        />
+                                        <DetailRow label="Decyzję podjął" value={details.decidedBy ?? "-"} />
+                                        <DetailRow label="Data decyzji" value={formatDateTime(details.decidedAt)} />
+                                        <div className="space-y-2">
+                                            <p className="text-muted-foreground">Uzasadnienie decyzji</p>
+                                            <p className="rounded-md border bg-muted/20 p-3 leading-relaxed whitespace-pre-line">
+                                                {details.decisionRationale ?? "Brak uzasadnienia."}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+
                             <Separator className="my-2" />
                             <div className="space-y-2 py-2 text-sm">
                                 <p className="text-muted-foreground">Konfliktujące polityki</p>

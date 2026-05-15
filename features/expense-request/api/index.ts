@@ -15,6 +15,14 @@ export type ExpenseRequestStatus =
     | "ESCALATED"
     | "APPROVED"
     | "DECLINED"
+    | "CANCELLED"
+
+export interface AppliedPolicySummary {
+    id: number
+    policyId: string
+    name: string
+    description: string | null
+}
 
 export type ManagerDecision = "APPROVE" | "DECLINE"
 
@@ -34,6 +42,10 @@ export interface ExpenseRequest {
     expenseDate: string
     submittedAt: string
     status: ExpenseRequestStatus
+    appliedPolicy?: AppliedPolicySummary | null
+    decisionRationale?: string | null
+    decidedBy?: string | null
+    decidedAt?: string | null
 }
 
 export interface ExpenseRequestDetails extends ExpenseRequest {
@@ -49,8 +61,8 @@ export interface ManagerDecisionDto {
 export interface ManagerDecisionResult {
     requestId: number
     status: ExpenseRequestStatus
-    selectedPolicyId: number
-    selectedPolicyRef: string
+    selectedPolicyId: number | null
+    selectedPolicyRef: string | null
 }
 
 const API_BASE = "/api"
