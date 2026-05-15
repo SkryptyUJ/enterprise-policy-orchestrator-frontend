@@ -22,8 +22,10 @@ export function PolicyDetailLayout({ policyId }: PolicyDetailLayoutProps) {
 
     const currentPolicy = policy || (allVersions.length > 0 ? allVersions[allVersions.length - 1] : null)
 
-    const isExpired = currentPolicy?.expiresAt ? new Date(currentPolicy.expiresAt) <= new Date() : false
-    const isActive = currentPolicy?.isValid && !isExpired
+    const now = new Date()
+    const isExpired = currentPolicy?.expiresAt ? new Date(currentPolicy.expiresAt) <= now : false
+    const isStarted = currentPolicy?.startsAt ? new Date(currentPolicy.startsAt) <= now : false
+    const isActive = Boolean(currentPolicy && isStarted && !isExpired)
     if (isLoading) {
         return (
             <div className="flex h-[50vh] items-center justify-center">
@@ -82,7 +84,7 @@ export function PolicyDetailLayout({ policyId }: PolicyDetailLayoutProps) {
                         {currentPolicy && (
                             <RoleGuard allowedRoles={["admin"]}>
                                 <SetExpirationDialog
-                                    policyId={parseInt(policyId, 10)}
+                                    policyId={currentPolicy.id}
                                     policyName={currentPolicy.name}
                                     currentExpiresAt={currentPolicy.expiresAt}
                                 />
@@ -101,17 +103,15 @@ export function PolicyDetailLayout({ policyId }: PolicyDetailLayoutProps) {
                                     </div>
                                     <CardTitle className="text-xl">{currentPolicy.name}</CardTitle>
                                 </div>
-                                {currentPolicy.isValid && (
-                                    isActive ? (
-                                        <span className="bg-green-100 text-green-700 border border-green-200 text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5 shadow-sm">
-                                            <CheckCircle2 className="size-3.5" /> Aktywna
-                                        </span>
-                                    ) : isExpired ? (
-                                        <span className="bg-amber-100 text-amber-700 border border-amber-200 text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5 shadow-sm">
-                                            <CalendarOff className="size-3.5" /> Wygasła
-                                        </span>
-                                    ) : null
-                                )}
+                                {isActive ? (
+                                    <span className="bg-green-100 text-green-700 border border-green-200 text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5 shadow-sm">
+                                        <CheckCircle2 className="size-3.5" /> Aktywna
+                                    </span>
+                                ) : isExpired ? (
+                                    <span className="bg-amber-100 text-amber-700 border border-amber-200 text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5 shadow-sm">
+                                        <CalendarOff className="size-3.5" /> Wygasła
+                                    </span>
+                                ) : null}
                             </div>
                         </CardHeader>
                         <CardContent className="pt-6 space-y-6">
@@ -148,7 +148,7 @@ export function PolicyDetailLayout({ policyId }: PolicyDetailLayoutProps) {
                                         <Tag className="size-3.5" /> Kategoria
                                     </div>
                                     <div className="text-sm font-medium flex items-center gap-2">
-                                        <span className="px-2 py-0.5 bg-background rounded border text-xs">ID: {currentPolicy.category || "Brak"}</span>
+                                        <span className="px-2 py-0.5 bg-background rounded border text-xs">{currentPolicy.category || "Brak"}</span>
                                     </div>
                                 </div>
 

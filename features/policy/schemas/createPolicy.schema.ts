@@ -34,6 +34,15 @@ const requiredDate = z.preprocess(
     z.string({ message: "Pole jest wymagane" }).min(1, "Pole jest wymagane")
 )
 
+const requiredString = z.preprocess(
+    (val) => {
+        if (val === undefined || val === null) return "";
+        if (typeof val === "string") return val.trim();
+        return String(val).trim();
+    },
+    z.string({ message: "Pole jest wymagane" }).min(1, "Pole jest wymagane")
+)
+
 export const createPolicySchema = z.object({
     name: z
         .string()
@@ -48,7 +57,7 @@ export const createPolicySchema = z.object({
     expiresAt: optionalDate,
     minPrice: optionalNumber,
     maxPrice: optionalNumber,
-    category: requiredNumber,
+    category: requiredString,
     authorizedRole: optionalNumber,
 })
 

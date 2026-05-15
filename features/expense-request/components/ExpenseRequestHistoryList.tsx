@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react"
 import { ArrowUpDown, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import {
 	Card,
 	CardContent,
@@ -19,12 +20,11 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
-import type { ExpenseRequest } from "../api"
+import { getExpenseRequestErrorMessage, type ExpenseRequest } from "../api"
 import { useExpenseRequestDetails, useExpenseRequests } from "../hooks/useExpenseRequests"
 import { ExpenseRequestDetailsSheet } from "./ExpenseRequestDetailsSheet"
 
-type SortField = "expenseDate" | "createdAt" | "amount" | "category"
+type SortField = "expenseDate" | "submittedAt" | "amount" | "category"
 type SortOrder = "asc" | "desc"
 
 type SortOption = {
@@ -35,8 +35,8 @@ type SortOption = {
 }
 
 const SORT_OPTIONS: SortOption[] = [
-	{ value: "createdAt-desc", label: "Najnowsze", sortBy: "createdAt", sortOrder: "desc" },
-	{ value: "createdAt-asc", label: "Najstarsze", sortBy: "createdAt", sortOrder: "asc" },
+	{ value: "submittedAt-desc", label: "Najnowsze", sortBy: "submittedAt", sortOrder: "desc" },
+	{ value: "submittedAt-asc", label: "Najstarsze", sortBy: "submittedAt", sortOrder: "asc" },
 	{ value: "expenseDate-desc", label: "Data wydatku malejąco", sortBy: "expenseDate", sortOrder: "desc" },
 	{ value: "expenseDate-asc", label: "Data wydatku rosnąco", sortBy: "expenseDate", sortOrder: "asc" },
 	{ value: "amount-desc", label: "Kwota malejąco", sortBy: "amount", sortOrder: "desc" },
@@ -44,6 +44,22 @@ const SORT_OPTIONS: SortOption[] = [
 	{ value: "category-asc", label: "Kategoria A-Z", sortBy: "category", sortOrder: "asc" },
 	{ value: "category-desc", label: "Kategoria Z-A", sortBy: "category", sortOrder: "desc" },
 ]
+
+const STATUS_LABELS: Record<ExpenseRequest["status"], string> = {
+	WAITING_FOR_APPROVAL: "Oczekuje na akceptację",
+	ESCALATED: "Eskalowany",
+	APPROVED: "Zatwierdzony",
+	DECLINED: "Odrzucony",
+	CANCELLED: "Anulowany",
+}
+
+const STATUS_VARIANTS: Record<ExpenseRequest["status"], "secondary" | "destructive" | "outline"> = {
+	WAITING_FOR_APPROVAL: "outline",
+	ESCALATED: "secondary",
+	APPROVED: "secondary",
+	DECLINED: "destructive",
+	CANCELLED: "destructive",
+}
 
 function formatCurrency(value: number) {
 	return new Intl.NumberFormat("pl-PL", {
@@ -56,28 +72,13 @@ function formatDate(value: string) {
 	return new Date(value).toLocaleDateString("pl-PL")
 }
 
-function getStatusVariant(status: string | undefined) {
-	const normalized = status?.toUpperCase()
-	if (normalized === "APPROVED") return "default" as const
-	if (normalized === "REJECTED") return "destructive" as const
-	return "secondary" as const
-}
-
-function getStatusLabel(status: string | undefined) {
-	const normalized = status?.toUpperCase()
-	if (normalized === "APPROVED") return "Zatwierdzony"
-	if (normalized === "REJECTED") return "Odrzucony"
-	if (normalized === "PENDING") return "Oczekuje"
-	return status ?? "Brak"
-}
-
 export function sortRequests(requests: ExpenseRequest[], sortBy: SortField, sortOrder: SortOrder) {
 	return [...requests].sort((left, right) => {
 		let comparison = 0
 
 		if (sortBy === "amount") {
 			comparison = left.amount - right.amount
-		} else if (sortBy === "expenseDate" || sortBy === "createdAt") {
+		} else if (sortBy === "expenseDate" || sortBy === "submittedAt") {
 			comparison = new Date(left[sortBy]).getTime() - new Date(right[sortBy]).getTime()
 		} else {
 			comparison = left.category.localeCompare(right.category, "pl")
@@ -94,19 +95,25 @@ export function ExpenseRequestHistoryList() {
 	const [toDate, setToDate] = useState("")
 	const [minAmount, setMinAmount] = useState("")
 	const [maxAmount, setMaxAmount] = useState("")
-	const [sortValue, setSortValue] = useState("createdAt-desc")
-	const [selectedExpenseId, setSelectedExpenseId] = useState<string | null>(null)
+	const [sortValue, setSortValue] = useState("submittedAt-desc")
+	const [selectedExpenseId, setSelectedExpenseId] = useState<number | null>(null)
 
 	const selectedSort = useMemo(
 		() => SORT_OPTIONS.find((option) => option.value === sortValue) ?? SORT_OPTIONS[0],
 		[sortValue]
 	)
 
-	const { data: requests, isLoading, isError } = useExpenseRequests()
+	const {
+		data: requests,
+		isLoading,
+		isError,
+		error: requestsError,
+	} = useExpenseRequests()
 	const {
 		data: selectedDetails,
 		isLoading: isDetailsLoading,
 		isError: isDetailsError,
+		error: detailsError,
 	} = useExpenseRequestDetails(selectedExpenseId)
 
 	const filteredRequests = useMemo(() => {
@@ -120,11 +127,11 @@ export function ExpenseRequestHistoryList() {
 				!normalizedSearch ||
 				request.description.toLowerCase().includes(normalizedSearch) ||
 				request.category.toLowerCase().includes(normalizedSearch)
-		const matchesCategory = !normalizedCategory || request.category.toLowerCase().includes(normalizedCategory)
-		const matchesFromDate = !fromDate || request.expenseDate >= fromDate
-		const matchesToDate = !toDate || request.expenseDate <= toDate
-		const matchesMinAmount = typeof minValue !== "number" || Number.isNaN(minValue) ? true : request.amount >= minValue
-		const matchesMaxAmount = typeof maxValue !== "number" || Number.isNaN(maxValue) ? true : request.amount <= maxValue
+			const matchesCategory = !normalizedCategory || request.category.toLowerCase().includes(normalizedCategory)
+			const matchesFromDate = !fromDate || request.expenseDate >= fromDate
+			const matchesToDate = !toDate || request.expenseDate <= toDate
+			const matchesMinAmount = typeof minValue !== "number" || Number.isNaN(minValue) ? true : request.amount >= minValue
+			const matchesMaxAmount = typeof maxValue !== "number" || Number.isNaN(maxValue) ? true : request.amount <= maxValue
 
 			return (
 				matchesSearch &&
@@ -146,7 +153,7 @@ export function ExpenseRequestHistoryList() {
 		setToDate("")
 		setMinAmount("")
 		setMaxAmount("")
-		setSortValue("createdAt-desc")
+		setSortValue("submittedAt-desc")
 	}
 
 	return (
@@ -255,7 +262,7 @@ export function ExpenseRequestHistoryList() {
 					</div>
 
 					<div className="rounded-md border">
-						<div className="grid grid-cols-[1.4fr_1fr_1fr_0.9fr_0.8fr] gap-4 border-b bg-muted/30 px-4 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+						<div className="grid grid-cols-[1.3fr_1fr_1fr_0.9fr_0.9fr] gap-4 border-b bg-muted/30 px-4 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
 							<span>Opis</span>
 							<span>Kategoria</span>
 							<span>Data wydatku</span>
@@ -269,7 +276,10 @@ export function ExpenseRequestHistoryList() {
 
 						{isError && !isLoading && (
 							<p className="px-4 py-8 text-sm text-destructive">
-								Nie udało się pobrać historii wniosków.
+								{getExpenseRequestErrorMessage(requestsError, "Nie udało się pobrać historii wniosków.", {
+									403: "Brak uprawnień do podglądu historii wniosków.",
+									404: "Nie znaleziono historii wniosków dla wskazanego użytkownika.",
+								})}
 							</p>
 						)}
 
@@ -286,15 +296,15 @@ export function ExpenseRequestHistoryList() {
 									key={request.id}
 									type="button"
 									onClick={() => setSelectedExpenseId(request.id)}
-									className="grid w-full cursor-pointer grid-cols-[1.4fr_1fr_1fr_0.9fr_0.8fr] gap-4 border-b px-4 py-3 text-left text-sm transition-colors hover:bg-muted/40 last:border-b-0"
+									className="grid w-full cursor-pointer grid-cols-[1.3fr_1fr_1fr_0.9fr_0.9fr] gap-4 border-b px-4 py-3 text-left text-sm transition-colors hover:bg-muted/40 last:border-b-0"
 								>
 									<span className="line-clamp-2">{request.description}</span>
 									<span>{request.category}</span>
 									<span>{formatDate(request.expenseDate)}</span>
 									<span className="font-medium">{formatCurrency(request.amount)}</span>
 									<span>
-										<Badge variant={getStatusVariant(request.status)}>
-											{getStatusLabel(request.status)}
+										<Badge variant={STATUS_VARIANTS[request.status]}>
+											{STATUS_LABELS[request.status]}
 										</Badge>
 									</span>
 								</button>
@@ -315,6 +325,7 @@ export function ExpenseRequestHistoryList() {
 				details={selectedDetails}
 				isLoading={isDetailsLoading}
 				isError={isDetailsError}
+				error={detailsError}
 			/>
 		</>
 	)

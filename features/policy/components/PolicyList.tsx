@@ -14,10 +14,9 @@ import {
 } from "@/components/ui/table"
 import { useAllPolicies } from "../hooks/usePolicies"
 
-function isPolicyActive(policy: { isValid: boolean | null; startsAt: string | null; expiresAt: string | null }) {
+function isPolicyActive(policy: { startsAt: string; expiresAt: string | null }) {
     const now = new Date()
-    if (!policy.isValid) return false
-    if (policy.startsAt && new Date(policy.startsAt) > now) return false
+    if (new Date(policy.startsAt) > now) return false
     if (policy.expiresAt && new Date(policy.expiresAt) <= now) return false
     return true
 }
@@ -110,7 +109,7 @@ export function PolicyList() {
                                 </TableCell>
                                 <TableCell className="text-right">
                                     <Button variant="ghost" size="sm" asChild>
-                                        <Link href={`/policy/${policy.id}`}>
+                                        <Link href={`/policy/${policy.policyId}`}>
                                             <Eye className="size-4 mr-1" />
                                             Szczegóły
                                         </Link>

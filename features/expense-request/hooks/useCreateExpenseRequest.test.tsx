@@ -8,12 +8,14 @@ vi.mock("@/lib/useApiClient", () => ({
     useApiClient: () => ({
         get: vi.fn(),
         post: vi.fn().mockResolvedValue({
-            id: "abc-123",
+            id: 100,
+            userId: "1",
             amount: 1500,
             category: "Podróż służbowa",
             description: "Bilety",
             expenseDate: "2026-03-20",
-            createdAt: "2026-03-26T10:00:00Z",
+            submittedAt: "2026-03-26T10:00:00Z",
+            status: "ESCALATED",
         }),
         put: vi.fn(),
         patch: vi.fn(),
@@ -23,7 +25,7 @@ vi.mock("@/lib/useApiClient", () => ({
 
 vi.mock("@/features/auth/hooks/useAuth", () => ({
     useAuth: () => ({
-        user: { id: "1", email: "test@example.com", name: "Test", role: "manager" },
+        user: { id: "1", email: "test@example.com", name: "Test", roles: ["manager"] },
         isLoading: false,
     }),
 }))
@@ -53,7 +55,7 @@ describe("useCreateExpenseRequest", () => {
         await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
         expect(result.current.data).toEqual(
-            expect.objectContaining({ id: "abc-123", amount: 1500 })
+            expect.objectContaining({ id: 100, amount: 1500 })
         )
     })
 })

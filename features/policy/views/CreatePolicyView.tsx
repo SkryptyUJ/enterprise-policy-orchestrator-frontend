@@ -12,7 +12,6 @@ import { Label } from "@/components/ui/label"
 import { InputField, SelectField, TextareaField } from "@/components/shared"
 import { createPolicySchema, type CreatePolicyFormValues } from "../schemas/createPolicy.schema"
 import { useCreatePolicy, usePolicyCategories } from "../hooks/usePolicies"
-import { useUser } from "@auth0/nextjs-auth0"
 
 function toLocalDatetimeString(date: Date): string {
     const pad = (n: number) => String(n).padStart(2, "0")
@@ -70,8 +69,9 @@ export function CreatePolicyView() {
             return
         }
 
-        if (form.getValues("category") !== nextCategory) {
-            form.setValue("category", nextCategory as never, { shouldValidate: true })
+        const normalizedCategory = String(nextCategory)
+        if (form.getValues("category") !== normalizedCategory) {
+            form.setValue("category", normalizedCategory as never, { shouldValidate: true })
         }
     }, [selectedCategoryId, form])
 

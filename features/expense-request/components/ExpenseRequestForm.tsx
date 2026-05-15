@@ -24,6 +24,7 @@ import {
     CardFooter,
 } from "@/components/ui/card"
 import { useCreateExpenseRequest } from "../hooks/useCreateExpenseRequest"
+import { getExpenseRequestErrorMessage, type ExpenseRequestStatus } from "../api"
 
 const CATEGORIES = [
     "Podróż służbowa",
@@ -34,6 +35,11 @@ const CATEGORIES = [
     "Transport",
     "Inne",
 ]
+
+const CREATE_STATUS_MESSAGES: Partial<Record<ExpenseRequestStatus, string>> = {
+    WAITING_FOR_APPROVAL: "Wniosek został złożony i oczekuje na akceptację.",
+    ESCALATED: "Wniosek został złożony i wymaga decyzji managera.",
+}
 
 function getTodayString() {
     return new Date().toISOString().slice(0, 10)
@@ -75,12 +81,22 @@ export function ExpenseRequestForm() {
                 expenseDate: form.expenseDate,
             },
             {
-                onSuccess: () => {
-                    toast.success("Wniosek został złożony pomyślnie")
+                onSuccess: (createdRequest) => {
+                    toast.success(
+                        CREATE_STATUS_MESSAGES[createdRequest.status] ?? "Wniosek został złożony pomyślnie"
+                    )
                     router.push("/dashboard")
                 },
-                onError: () => {
-                    toast.error("Nie udało się złożyć wniosku. Spróbuj ponownie.")
+                onError: (error) => {
+                    toast.error(
+                        getExpenseRequestErrorMessage(
+                            error,
+                            "Nie udało się złożyć wniosku. Spróbuj ponownie.",
+                            {
+                                400: "Nie można utworzyć wniosku, bo nie znaleziono dopasowanych polityk.",
+                            }
+                        )
+                    )
                 },
             }
         )

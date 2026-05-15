@@ -13,21 +13,20 @@ function createMockClient() {
 
 const mockPolicy: Policy = {
     id: 1,
-    policyId: null,
-    authorUserId: 1,
+    policyId: "POL-1",
+    authorUserId: "1",
     categoryId: 1,
     name: "Polityka podróży",
     description: "Zasady rozliczania podróży służbowych",
     version: 1,
-    createdAt: "2026-01-01T00:00:00Z",
-    updatedAt: "2026-01-01T00:00:00Z",
-    startsAt: "2026-01-01T00:00:00Z",
+    createdAt: "2026-01-01T00:00:00",
+    updatedAt: "2026-01-01T00:00:00",
+    startsAt: "2026-01-01T00:00:00",
     expiresAt: null,
     minPrice: 100,
     maxPrice: 5000,
-    category: 1,
+    category: "TRAVEL",
     authorizedRole: 2,
-    isValid: true,
 }
 
 describe("getAllPolicies", () => {

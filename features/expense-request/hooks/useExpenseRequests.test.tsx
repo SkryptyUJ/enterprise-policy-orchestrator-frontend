@@ -2,14 +2,15 @@ import { describe, it, expect, vi, beforeEach } from "vitest"
 import { renderHook, waitFor } from "@testing-library/react"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { type ReactNode } from "react"
-import { useExpenseRequestDetails, useExpenseRequests } from "./useExpenseRequests"
+import { useExpenseRequestDetails, useExpenseRequests, useManagerDecision } from "./useExpenseRequests"
 
 const mockGet = vi.fn()
+const mockPost = vi.fn()
 
 vi.mock("@/lib/useApiClient", () => ({
 	useApiClient: () => ({
 		get: mockGet,
-		post: vi.fn(),
+		post: mockPost,
 		put: vi.fn(),
 		patch: vi.fn(),
 		delete: vi.fn(),
@@ -47,7 +48,7 @@ describe("useExpenseRequests", () => {
 
 		await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
-		expect(mockGet).toHaveBeenCalledWith("http://localhost:8080/api/users/1/expense-requests")
+		expect(mockGet).toHaveBeenCalledWith("/api/users/1/expense-requests")
 	})
 
 	it("pobiera szczegoly wskazanego wniosku", async () => {
@@ -59,7 +60,30 @@ describe("useExpenseRequests", () => {
 
 		await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
-		expect(mockGet).toHaveBeenCalledWith("http://localhost:8080/api/users/1/expense-requests/exp-1")
+		expect(mockGet).toHaveBeenCalledWith("/api/users/1/expense-requests/exp-1")
+	})
+
+	it("wysyła decyzję managera na właściwy endpoint", async () => {
+		mockPost.mockResolvedValueOnce({
+			requestId: 77,
+			status: "APPROVED",
+			selectedPolicyId: 12,
+			selectedPolicyRef: "TRAVEL-EXT",
+		})
+
+		const { result } = renderHook(() => useManagerDecision("exp-1"), {
+			wrapper: createWrapper(),
+		})
+
+		result.current.mutate({ policyId: 12, decision: "APPROVE" })
+
+		await waitFor(() => expect(result.current.isSuccess).toBe(true))
+
+		expect(mockPost).toHaveBeenCalledWith(
+			"/api/users/1/expense-requests/exp-1/manager-decision",
+			{ policyId: 12, decision: "APPROVE" },
+			{ headers: { "X-User-Role": "Manager" } }
+		)
 	})
 })
 

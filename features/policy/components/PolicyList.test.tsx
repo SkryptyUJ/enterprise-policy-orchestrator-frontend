@@ -7,8 +7,8 @@ import { PolicyList } from "./PolicyList"
 const mockActivePolicies = [
     {
         id: 1,
+        policyId: "POL-TRAVEL",
         name: "Polityka podróży",
-        isValid: true,
         startsAt: "2026-01-01T00:00:00Z",
         expiresAt: null,
         minPrice: 100,
@@ -16,8 +16,8 @@ const mockActivePolicies = [
     },
     {
         id: 2,
+        policyId: "POL-TRAINING",
         name: "Polityka szkoleniowa",
-        isValid: true,
         startsAt: "2025-01-01T00:00:00Z",
         expiresAt: "2025-06-01T00:00:00Z",
         minPrice: null,

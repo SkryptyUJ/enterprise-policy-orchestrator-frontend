@@ -49,13 +49,13 @@ export function EditPolicyView({ policyId }: EditPolicyViewProps) {
     useEffect(() => {
         if (policy) {
             form.reset({
-                name: policy.name || "",
-                description: policy.description || "",
-                categoryId: policy.categoryId || undefined,
-                category: policy.category || undefined,
-                authorizedRole: policy.authorizedRole || undefined,
-                minPrice: policy.minPrice || undefined,
-                maxPrice: policy.maxPrice || undefined,
+                name: policy.name,
+                description: policy.description ?? "",
+                categoryId: policy.categoryId ?? undefined,
+                category: policy.category ?? "",
+                authorizedRole: policy.authorizedRole ?? undefined,
+                minPrice: policy.minPrice ?? undefined,
+                maxPrice: policy.maxPrice ?? undefined,
                 startsAt: policy.startsAt ? new Date(policy.startsAt).toISOString().slice(0, 16) : undefined,
                 expiresAt: policy.expiresAt ? new Date(policy.expiresAt).toISOString().slice(0, 16) : undefined,
             })
@@ -177,9 +177,9 @@ export function EditPolicyView({ policyId }: EditPolicyViewProps) {
                                 />
                                 <InputField<CreatePolicyFormValues>
                                     name="category"
-                                    type="number"
+                                    type="text"
                                     label="Kategoria"
-                                    placeholder="np. 1"
+                                    placeholder="np. TRAVEL"
                                 />
                                 <InputField<CreatePolicyFormValues>
                                     name="authorizedRole"
