@@ -1,0 +1,48 @@
+# Dependencies
+node_modules
+npm-debug.log
+yarn-error.log
+pnpm-debug.log
+
+# Build output
+.next
+dist
+build
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Git
+.git
+.gitignore
+
+# Testing
+vitest.config.ts
+vitest.setup.ts
+*.test.ts
+*.test.tsx
+.coverage
+coverage
+
+# Documentation
+README.md
+CLAUDE.md
+.claude
+
+# CI/CD
+.github
+
+# Other
+.vercel
+.turbo
+

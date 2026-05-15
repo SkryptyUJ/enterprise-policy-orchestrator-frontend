@@ -1,0 +1,26 @@
+FROM node:20-alpine
+WORKDIR /app
+
+RUN apk add --no-cache dumb-init
+
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nextjs -u 1001
+
+COPY package*.json ./
+
+ENV NPM_CONFIG_PRODUCTION=false
+ENV NODE_ENV=development
+
+RUN npm ci
+
+COPY . .
+
+RUN chown -R nextjs:nodejs /app
+
+USER nextjs
+
+EXPOSE 3000
+
+ENTRYPOINT ["dumb-init", "--"]
+
+CMD ["npm", "run", "dev"]
