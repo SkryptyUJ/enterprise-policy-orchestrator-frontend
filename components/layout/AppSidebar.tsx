@@ -13,7 +13,8 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { useAuth, Role } from "@/features/auth/hooks/useAuth"
+import { canAccess, type Role } from "@/features/auth/access-control"
+import { useAuth } from "@/features/auth/hooks/useAuth"
 import { LayoutDashboard, FileText, FilePlus, LogOut, ArrowLeftRight, ChevronRight, Settings, List } from "lucide-react"
 import Link from "next/link"
 
@@ -47,13 +48,13 @@ const MENU_CONFIG: NavGroup[] = [
                 title: "Nowy wniosek",
                 url: "/expense-request/new",
                 icon: ArrowLeftRight,
-                roles: ["employee"]
+                roles: ["employee", "admin"]
             },
             {
                 title: "Historia wnioskow",
                 url: "/expense-request/history",
                 icon: List,
-                roles: ["employee", "manager", "admin"]
+                roles: ["employee", "manager", "compliance_officer", "admin"]
             }
         ]
     },
@@ -64,7 +65,7 @@ const MENU_CONFIG: NavGroup[] = [
                 title: "Wszystkie polityki",
                 url: "/policy/all",
                 icon: FileText,
-                roles: ["admin", "manager", "employee"]
+                roles: ["employee", "manager", "compliance_officer", "admin"]
             },
             {
                 title: "Nowa polityka",
@@ -84,7 +85,7 @@ const MENU_CONFIG: NavGroup[] = [
             },
             {
                 title: "Wyloguj się",
-                url: "/api/auth/logout",
+                url: "/auth/logout",
                 icon: LogOut,
             }
         ]
@@ -158,11 +159,7 @@ export function AppSidebar() {
     const filteredNavGroups = MENU_CONFIG.map(group => {
         return {
             ...group,
-            items: group.items.filter(item => {
-                if (!item.roles) return true;
-                if (!user) return false;
-                return item.roles.some((role) => user.roles.includes(role));
-            })
+            items: group.items.filter((item) => canAccess(user, item.roles))
         }
     }).filter(group => group.items.length > 0);
 
