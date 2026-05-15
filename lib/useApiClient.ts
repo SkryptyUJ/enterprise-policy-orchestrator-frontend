@@ -1,13 +1,15 @@
 "use client"
 
-import { getAccessToken } from "@auth0/nextjs-auth0/client"
 import { useMemo } from "react"
 import { createApiClient } from "./apiClient"
 
 export function useApiClient() {
     return useMemo(() => {
         return createApiClient(async () => {
-            return getAccessToken()
+            // TODO: zastąp po instalacji @auth0/nextjs-auth0:
+            // const { getAccessTokenSilently } = useAuth0()
+            // return getAccessTokenSilently()
+            return "placeholder-token"
         })
     }, [])
 }
