@@ -86,7 +86,7 @@ export function CreatePolicyView() {
 
     function onSubmit(values: CreatePolicyFormValues) {
         createPolicy(values, {
-            onSuccess: () => router.push("/dashboard"),
+            onSuccess: () => router.push("/policy/all"),
         })
     }
 

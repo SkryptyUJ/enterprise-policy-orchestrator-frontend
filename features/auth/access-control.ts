@@ -1,4 +1,10 @@
-export const AUTH0_NAMESPACE = "https://policy-orchestrator.com" as const;
+const auth0Namespace = process.env.NEXT_PUBLIC_AUTH0_NAMESPACE;
+
+if (!auth0Namespace) {
+    throw new Error("Missing NEXT_PUBLIC_AUTH0_NAMESPACE environment variable")
+}
+
+export const AUTH0_NAMESPACE = auth0Namespace;
 
 export const ROLES = [
     "admin",
