@@ -4,6 +4,16 @@ type RequestOptions = Omit<RequestInit, "headers"> & {
     headers?: Record<string, string>
 }
 
+export class ApiError extends Error {
+    status: number
+
+    constructor(status: number, statusText: string) {
+        super(`Request failed: ${status} ${statusText}`)
+        this.name = "ApiError"
+        this.status = status
+    }
+}
+
 export function createApiClient(getToken: GetToken) {
     async function request<T>(url: string, options: RequestOptions = {}): Promise<T> {
         const token = await getToken()
@@ -19,7 +29,7 @@ export function createApiClient(getToken: GetToken) {
             },
         })
 
-        if (!res.ok) throw new Error(`Request failed: ${res.status} ${res.statusText}`)
+        if (!res.ok) throw new ApiError(res.status, res.statusText)
 
         return res.json()
     }

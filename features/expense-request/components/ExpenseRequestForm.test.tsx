@@ -3,6 +3,8 @@ import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { type ReactNode } from "react"
+import { toast } from "sonner"
+import { ApiError } from "@/lib/apiClient"
 import { ExpenseRequestForm } from "./ExpenseRequestForm"
 
 const mockPush = vi.fn()
@@ -26,9 +28,13 @@ vi.mock("../hooks/useCreateExpenseRequest", () => ({
 
 function createWrapper() {
     const queryClient = new QueryClient()
-    return ({ children }: { children: ReactNode }) => (
-        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-    )
+    function TestQueryClientProvider({ children }: { children: ReactNode }) {
+        return (
+            <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+        )
+    }
+
+    return TestQueryClientProvider
 }
 
 describe("ExpenseRequestForm", () => {
@@ -96,5 +102,47 @@ describe("ExpenseRequestForm", () => {
         const dateInput = screen.getByLabelText(/data wydatku/i)
         const today = new Date().toISOString().slice(0, 10)
         expect(dateInput).toHaveValue(today)
+    })
+
+    it("pokazuje dedykowany komunikat dla błędu 400", async () => {
+        const user = userEvent.setup()
+        mockMutate.mockImplementation((_payload, options) => {
+            options?.onError?.(new ApiError(400, "Bad Request"), undefined, undefined, undefined)
+        })
+
+        render(<ExpenseRequestForm />, { wrapper: createWrapper() })
+
+        const amountInput = screen.getByLabelText(/kwota/i)
+        await user.clear(amountInput)
+        await user.type(amountInput, "1500")
+
+        const descInput = screen.getByLabelText(/opis/i)
+        await user.type(descInput, "Podróż służbowa")
+
+        await user.click(screen.getByRole("button", { name: /złóż wniosek/i }))
+
+        expect(toast.error).toHaveBeenCalledWith(
+            "Nie udało się złożyć wniosku, ponieważ nie udało się dopasować żadnej polityki. Skontaktuj się z administratorem."
+        )
+    })
+
+    it("pokazuje domyślny komunikat dla innych błędów", async () => {
+        const user = userEvent.setup()
+        mockMutate.mockImplementation((_payload, options) => {
+            options?.onError?.(new ApiError(404, "Not Found"), undefined, undefined, undefined)
+        })
+
+        render(<ExpenseRequestForm />, { wrapper: createWrapper() })
+
+        const amountInput = screen.getByLabelText(/kwota/i)
+        await user.clear(amountInput)
+        await user.type(amountInput, "1500")
+
+        const descInput = screen.getByLabelText(/opis/i)
+        await user.type(descInput, "Podróż służbowa")
+
+        await user.click(screen.getByRole("button", { name: /złóż wniosek/i }))
+
+        expect(toast.error).toHaveBeenCalledWith("Nie udało się złożyć wniosku. Spróbuj ponownie.")
     })
 })
