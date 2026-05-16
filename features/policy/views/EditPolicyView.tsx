@@ -66,7 +66,7 @@ export function EditPolicyView({ policyId }: EditPolicyViewProps) {
         updatePolicy(
             { ...values, policyId: policy?.policyId ? String(policy.policyId) : undefined },
             {
-                onSuccess: () => router.push("/dashboard"),
+                onSuccess: () => router.push(`/policy/${policyId}`),
             }
         )
     }

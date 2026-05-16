@@ -23,6 +23,7 @@ import {
     CardContent,
     CardFooter,
 } from "@/components/ui/card"
+import { ApiError } from "@/lib/apiClient"
 import { useCreateExpenseRequest } from "../hooks/useCreateExpenseRequest"
 
 const CATEGORIES = [
@@ -79,7 +80,14 @@ export function ExpenseRequestForm() {
                     toast.success("Wniosek został złożony pomyślnie")
                     router.push("/dashboard")
                 },
-                onError: () => {
+                onError: (error) => {
+                    if (error instanceof ApiError && error.status === 400) {
+                        toast.error(
+                            "Nie udało się złożyć wniosku, ponieważ nie udało się dopasować żadnej polityki. Skontaktuj się z administratorem."
+                        )
+                        return
+                    }
+
                     toast.error("Nie udało się złożyć wniosku. Spróbuj ponownie.")
                 },
             }
