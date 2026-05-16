@@ -53,6 +53,7 @@ const InputField = <T extends Record<string, unknown>>({
               )}
               <Input
                 {...field}
+                value={field.value ?? ""}
                 id={name}
                 placeholder={placeholder}
                 type={type}

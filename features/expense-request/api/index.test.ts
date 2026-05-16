@@ -32,7 +32,7 @@ describe("createExpenseRequest", () => {
         const result = await createExpenseRequest(mockClient, "user-123", mockDto)
 
         expect(mockClient.post).toHaveBeenCalledOnce()
-        expect(mockClient.post).toHaveBeenCalledWith("http://localhost:8080/api/users/user-123/expense-requests", mockDto)
+        expect(mockClient.post).toHaveBeenCalledWith("/api/users/user-123/expense-requests", mockDto)
         expect(result).toEqual(mockResponse)
     })
 
@@ -61,7 +61,7 @@ describe("fetchExpenseRequests", () => {
 
         await fetchExpenseRequests(mockClient, "user-123")
 
-        expect(mockClient.get).toHaveBeenCalledWith("http://localhost:8080/api/users/user-123/expense-requests")
+        expect(mockClient.get).toHaveBeenCalledWith("/api/users/user-123/expense-requests")
     })
 })
 
@@ -77,7 +77,7 @@ describe("fetchExpenseRequestDetails", () => {
 
         await fetchExpenseRequestDetails(mockClient, "user-123", "exp-1")
 
-        expect(mockClient.get).toHaveBeenCalledWith("http://localhost:8080/api/users/user-123/expense-requests/exp-1")
+        expect(mockClient.get).toHaveBeenCalledWith("/api/users/user-123/expense-requests/exp-1")
     })
 })
 
