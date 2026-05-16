@@ -45,6 +45,7 @@ const TextareaField = <T extends Record<string, unknown>>({
           <FormControl>
             <Textarea
               {...field}
+              value={field.value ?? ""}
               id={name}
               placeholder={placeholder}
               disabled={disabled}

@@ -31,7 +31,7 @@ export interface ExpenseRequestDetails extends ExpenseRequest {
     updatedAt?: string
 }
 
-const API_BASE = "http://localhost:8080/api"
+const API_BASE = "/api"
 
 export function fetchExpenseRequests(client: ApiClient, userId: string) {
     return client.get<ExpenseRequest[]>(`${API_BASE}/users/${userId}/expense-requests`)
