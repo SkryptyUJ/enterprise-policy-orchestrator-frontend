@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react"
 import { ArrowUpDown, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useAuth } from "@/features/auth/hooks/useAuth"
 import {
 	Card,
 	CardContent,
@@ -21,10 +22,15 @@ import {
 } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import type { ExpenseRequest } from "../api"
-import { useExpenseRequestDetails, useExpenseRequests } from "../hooks/useExpenseRequests"
+import {
+	useApproveExpenseRequest,
+	useDeclineExpenseRequest,
+	useExpenseRequestDetails,
+	useExpenseRequests,
+} from "../hooks/useExpenseRequests"
 import { ExpenseRequestDetailsSheet } from "./ExpenseRequestDetailsSheet"
 
-type SortField = "expenseDate" | "createdAt" | "amount" | "category"
+type SortField = "expenseDate" | "submittedAt" | "amount" | "category"
 type SortOrder = "asc" | "desc"
 
 type SortOption = {
@@ -35,8 +41,8 @@ type SortOption = {
 }
 
 const SORT_OPTIONS: SortOption[] = [
-	{ value: "createdAt-desc", label: "Najnowsze", sortBy: "createdAt", sortOrder: "desc" },
-	{ value: "createdAt-asc", label: "Najstarsze", sortBy: "createdAt", sortOrder: "asc" },
+	{ value: "submittedAt-desc", label: "Najnowsze", sortBy: "submittedAt", sortOrder: "desc" },
+	{ value: "submittedAt-asc", label: "Najstarsze", sortBy: "submittedAt", sortOrder: "asc" },
 	{ value: "expenseDate-desc", label: "Data wydatku malejąco", sortBy: "expenseDate", sortOrder: "desc" },
 	{ value: "expenseDate-asc", label: "Data wydatku rosnąco", sortBy: "expenseDate", sortOrder: "asc" },
 	{ value: "amount-desc", label: "Kwota malejąco", sortBy: "amount", sortOrder: "desc" },
@@ -59,15 +65,16 @@ function formatDate(value: string) {
 function getStatusVariant(status: string | undefined) {
 	const normalized = status?.toUpperCase()
 	if (normalized === "APPROVED") return "default" as const
-	if (normalized === "REJECTED") return "destructive" as const
+	if (normalized === "DECLINED") return "destructive" as const
 	return "secondary" as const
 }
 
 function getStatusLabel(status: string | undefined) {
 	const normalized = status?.toUpperCase()
 	if (normalized === "APPROVED") return "Zatwierdzony"
-	if (normalized === "REJECTED") return "Odrzucony"
-	if (normalized === "PENDING") return "Oczekuje"
+	if (normalized === "DECLINED") return "Odrzucony"
+	if (normalized === "WAITING_FOR_APPROVAL") return "Oczekuje"
+	if (normalized === "CANCELLED") return "Anulowany"
 	return status ?? "Brak"
 }
 
@@ -77,7 +84,7 @@ export function sortRequests(requests: ExpenseRequest[], sortBy: SortField, sort
 
 		if (sortBy === "amount") {
 			comparison = left.amount - right.amount
-		} else if (sortBy === "expenseDate" || sortBy === "createdAt") {
+		} else if (sortBy === "expenseDate" || sortBy === "submittedAt") {
 			comparison = new Date(left[sortBy]).getTime() - new Date(right[sortBy]).getTime()
 		} else {
 			comparison = left.category.localeCompare(right.category, "pl")
@@ -88,13 +95,19 @@ export function sortRequests(requests: ExpenseRequest[], sortBy: SortField, sort
 }
 
 export function ExpenseRequestHistoryList() {
+	const { user } = useAuth()
+	const canReview = Boolean(user?.roles.includes("admin") || user?.roles.includes("manager"))
+	const tableGridClass = canReview
+		? "grid-cols-[1.2fr_0.9fr_1fr_1fr_0.9fr_0.8fr]"
+		: "grid-cols-[1.4fr_1fr_1fr_0.9fr_0.8fr]"
+
 	const [search, setSearch] = useState("")
 	const [category, setCategory] = useState("")
 	const [fromDate, setFromDate] = useState("")
 	const [toDate, setToDate] = useState("")
 	const [minAmount, setMinAmount] = useState("")
 	const [maxAmount, setMaxAmount] = useState("")
-	const [sortValue, setSortValue] = useState("createdAt-desc")
+	const [sortValue, setSortValue] = useState("submittedAt-desc")
 	const [selectedExpenseId, setSelectedExpenseId] = useState<string | null>(null)
 
 	const selectedSort = useMemo(
@@ -103,6 +116,8 @@ export function ExpenseRequestHistoryList() {
 	)
 
 	const { data: requests, isLoading, isError } = useExpenseRequests()
+	const { mutateAsync: approveRequest, isPending: isApproving } = useApproveExpenseRequest()
+	const { mutateAsync: declineRequest, isPending: isDeclining } = useDeclineExpenseRequest()
 	const {
 		data: selectedDetails,
 		isLoading: isDetailsLoading,
@@ -146,7 +161,17 @@ export function ExpenseRequestHistoryList() {
 		setToDate("")
 		setMinAmount("")
 		setMaxAmount("")
-		setSortValue("createdAt-desc")
+		setSortValue("submittedAt-desc")
+	}
+
+	async function handleApprove(decisionRationale: string) {
+		if (!selectedExpenseId) return
+		await approveRequest({ expenseRequestId: selectedExpenseId, decisionRationale })
+	}
+
+	async function handleDecline(decisionRationale: string) {
+		if (!selectedExpenseId) return
+		await declineRequest({ expenseRequestId: selectedExpenseId, decisionRationale })
 	}
 
 	return (
@@ -157,7 +182,9 @@ export function ExpenseRequestHistoryList() {
 						<div>
 							<CardTitle>Historia wniosków wydatkowych</CardTitle>
 							<CardDescription>
-								Filtruj i sortuj swoje wnioski.
+								{canReview
+									? "Filtruj i sortuj wszystkie wnioski. Możesz zatwierdzać oczekujące zgłoszenia."
+									: "Filtruj i sortuj swoje wnioski."}
 							</CardDescription>
 						</div>
 						<Button variant="outline" onClick={clearFilters}>
@@ -255,8 +282,9 @@ export function ExpenseRequestHistoryList() {
 					</div>
 
 					<div className="rounded-md border">
-						<div className="grid grid-cols-[1.4fr_1fr_1fr_0.9fr_0.8fr] gap-4 border-b bg-muted/30 px-4 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+						<div className={`grid ${tableGridClass} gap-4 border-b bg-muted/30 px-4 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground`}>
 							<span>Opis</span>
+							{canReview && <span>Użytkownik</span>}
 							<span>Kategoria</span>
 							<span>Data wydatku</span>
 							<span>Kwota</span>
@@ -285,10 +313,11 @@ export function ExpenseRequestHistoryList() {
 								<button
 									key={request.id}
 									type="button"
-									onClick={() => setSelectedExpenseId(request.id)}
-									className="grid w-full cursor-pointer grid-cols-[1.4fr_1fr_1fr_0.9fr_0.8fr] gap-4 border-b px-4 py-3 text-left text-sm transition-colors hover:bg-muted/40 last:border-b-0"
+									onClick={() => setSelectedExpenseId(String(request.id))}
+									className={`grid w-full cursor-pointer ${tableGridClass} gap-4 border-b px-4 py-3 text-left text-sm transition-colors hover:bg-muted/40 last:border-b-0`}
 								>
 									<span className="line-clamp-2">{request.description}</span>
+									{canReview && <span className="font-mono text-xs sm:text-sm">{request.userId}</span>}
 									<span>{request.category}</span>
 									<span>{formatDate(request.expenseDate)}</span>
 									<span className="font-medium">{formatCurrency(request.amount)}</span>
@@ -315,6 +344,10 @@ export function ExpenseRequestHistoryList() {
 				details={selectedDetails}
 				isLoading={isDetailsLoading}
 				isError={isDetailsError}
+				canApprove={canReview}
+				onApprove={handleApprove}
+				onDecline={handleDecline}
+				isApproving={isApproving || isDeclining}
 			/>
 		</>
 	)
