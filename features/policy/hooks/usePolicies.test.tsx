@@ -21,7 +21,7 @@ const mockPolicies = [
         maxPrice: null,
         category: 1,
         authorizedRole: 2,
-        isValid: true,
+        active: true,
     },
 ]
 

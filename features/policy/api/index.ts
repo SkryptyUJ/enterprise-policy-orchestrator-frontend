@@ -18,7 +18,7 @@ export interface Policy {
     maxPrice: number | null
     category: number | null
     authorizedRole: number | null
-    isValid: boolean | null
+    active: boolean | null
 }
 
 export interface CreatePolicyDto {
