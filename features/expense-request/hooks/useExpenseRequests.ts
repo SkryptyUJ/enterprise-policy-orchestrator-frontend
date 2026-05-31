@@ -39,10 +39,10 @@ export function useExpenseRequests() {
             if (!user) throw new Error("Brak zalogowanego użytkownika")
 
             if (mode === "review") {
-                return fetchExpenseRequestsForReview(client, user.id)
+                return fetchExpenseRequestsForReview(client)
             }
 
-            return fetchExpenseRequests(client, user.id)
+            return fetchExpenseRequests(client)
         },
         enabled: Boolean(user),
     })
@@ -60,10 +60,10 @@ export function useExpenseRequestDetails(expenseRequestId: string | null) {
             if (!expenseRequestId) throw new Error("Brak identyfikatora wniosku")
 
             if (mode === "review") {
-                return fetchExpenseRequestDetailsForReview(client, user.id, expenseRequestId)
+                return fetchExpenseRequestDetailsForReview(client, expenseRequestId)
             }
 
-            return fetchExpenseRequestDetails(client, user.id, expenseRequestId)
+            return fetchExpenseRequestDetails(client, expenseRequestId)
         },
         enabled: Boolean(user && expenseRequestId),
     })
@@ -83,7 +83,7 @@ export function useApproveExpenseRequest() {
                 throw new Error("Brak uprawnień do zatwierdzania wniosków")
             }
 
-            return approveExpenseRequest(client, user.id, expenseRequestId, { decisionRationale })
+            return approveExpenseRequest(client, expenseRequestId, { decisionRationale })
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: expenseRequestKeys.all })
@@ -105,7 +105,7 @@ export function useDeclineExpenseRequest() {
                 throw new Error("Brak uprawnień do odrzucania wniosków")
             }
 
-            return declineExpenseRequest(client, user.id, expenseRequestId, { decisionRationale })
+            return declineExpenseRequest(client, expenseRequestId, { decisionRationale })
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: expenseRequestKeys.all })

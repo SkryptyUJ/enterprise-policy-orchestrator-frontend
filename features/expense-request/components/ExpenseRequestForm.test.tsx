@@ -26,6 +26,18 @@ vi.mock("../hooks/useCreateExpenseRequest", () => ({
     }),
 }))
 
+vi.mock("@/features/policy/hooks/usePolicies", () => ({
+    usePolicyCategories: () => ({
+        data: [
+            { id: 1, value: "1", label: "Sprzet biurowy" },
+            { id: 2, value: "2", label: "Podroze sluzbowe" },
+            { id: 3, value: "3", label: "Szkolenia" },
+            { id: 4, value: "4", label: "Posilki" },
+        ],
+        isLoading: false,
+    }),
+}))
+
 function createWrapper() {
     const queryClient = new QueryClient()
     function TestQueryClientProvider({ children }: { children: ReactNode }) {

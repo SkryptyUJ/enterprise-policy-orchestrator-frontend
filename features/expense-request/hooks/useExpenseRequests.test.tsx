@@ -56,7 +56,7 @@ describe("useExpenseRequests", () => {
 
 		await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
-		expect(mockGet).toHaveBeenCalledWith("/api/users/1/expense-requests")
+		expect(mockGet).toHaveBeenCalledWith("/api/expense-requests")
 	})
 
 	it("pobiera szczegoly wskazanego wniosku", async () => {
@@ -68,7 +68,7 @@ describe("useExpenseRequests", () => {
 
 		await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
-		expect(mockGet).toHaveBeenCalledWith("/api/users/1/expense-requests/exp-1")
+		expect(mockGet).toHaveBeenCalledWith("/api/expense-requests/exp-1")
 	})
 
 	it("dla managera pobiera listę w trybie review", async () => {
@@ -81,7 +81,7 @@ describe("useExpenseRequests", () => {
 
 		await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
-		expect(mockGet).toHaveBeenCalledWith("/api/users/1/expense-requests/review")
+		expect(mockGet).toHaveBeenCalledWith("/api/expense-requests/review")
 	})
 
 	it("dla managera pobiera szczegóły w trybie review", async () => {
@@ -94,7 +94,7 @@ describe("useExpenseRequests", () => {
 
 		await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
-		expect(mockGet).toHaveBeenCalledWith("/api/users/1/expense-requests/review/exp-1")
+		expect(mockGet).toHaveBeenCalledWith("/api/expense-requests/review/exp-1")
 	})
 
 	it("pozwala managerowi zatwierdzić wniosek z uzasadnieniem", async () => {
@@ -113,7 +113,7 @@ describe("useExpenseRequests", () => {
 		})
 
 		expect(mockPatch).toHaveBeenCalledWith(
-			"/api/users/1/expense-requests/review/exp-1/approve",
+			"/api/expense-requests/review/exp-1/approve",
 			{ decisionRationale: "Zgodne z polityką" }
 		)
 	})
@@ -134,7 +134,7 @@ describe("useExpenseRequests", () => {
 		})
 
 		expect(mockPatch).toHaveBeenCalledWith(
-			"/api/users/1/expense-requests/review/exp-1/decline",
+			"/api/expense-requests/review/exp-1/decline",
 			{ decisionRationale: "Poza zakresem polityki" }
 		)
 	})

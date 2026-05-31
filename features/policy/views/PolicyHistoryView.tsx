@@ -1,11 +1,13 @@
 "use client"
 
+import { useMemo } from "react"
 import { usePolicyVersions } from "../hooks/usePolicyVersions"
+import { usePolicyCategories } from "../hooks/usePolicies"
 import { useParams } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Policy } from "../api"
+import { CategoryOption, Policy } from "../api"
 import { History, Search, ArrowRight, User, Loader2, Edit3, Calendar, AlertCircle } from "lucide-react"
 
 const FIELD_LABELS: Partial<Record<keyof Policy, string>> = {
@@ -15,13 +17,42 @@ const FIELD_LABELS: Partial<Record<keyof Policy, string>> = {
     expiresAt: "Do",
     minPrice: "Cena min.",
     maxPrice: "Cena max.",
-    category: "ID Kategorii",
-    categoryId: "Kategoria",
+    category: "Kategoria",
+    categoryId: "ID kategorii",
     authorizedRole: "Rola docelowa",
     active: "Aktywna (Status)"
 }
 
-function getModifiedFields(current: Policy, previous?: Policy) {
+function resolveCategoryLabel(rawValue: unknown, categoryOptions: CategoryOption[]) {
+    if (rawValue === null || rawValue === undefined || rawValue === "") {
+        return "brak"
+    }
+
+    const categoryValue = String(rawValue)
+    const matchedOption = categoryOptions.find(
+        (option) => option.value === categoryValue || String(option.id) === categoryValue
+    )
+
+    return matchedOption?.label ?? categoryValue
+}
+
+function formatPolicyFieldValue(
+    key: keyof Policy,
+    rawValue: unknown,
+    categoryOptions: CategoryOption[]
+) {
+    if (rawValue === null || rawValue === undefined || rawValue === "") {
+        return "brak"
+    }
+
+    if (key === "category" || key === "categoryId") {
+        return resolveCategoryLabel(rawValue, categoryOptions)
+    }
+
+    return String(rawValue)
+}
+
+function getModifiedFields(current: Policy, previous: Policy | undefined, categoryOptions: CategoryOption[]) {
     if (!previous) return []
     
     const diff: { key: string, label: string, oldVal: any, newVal: any }[] = []
@@ -34,8 +65,8 @@ function getModifiedFields(current: Policy, previous?: Policy) {
             diff.push({
                 key,
                 label: FIELD_LABELS[key] || key,
-                oldVal: previous[key] === null || previous[key] === undefined || previous[key] === "" ? "brak" : String(previous[key]),
-                newVal: current[key] === null || current[key] === undefined || current[key] === "" ? "brak" : String(current[key])
+                oldVal: formatPolicyFieldValue(key, previous[key], categoryOptions),
+                newVal: formatPolicyFieldValue(key, current[key], categoryOptions)
             })
         }
     }
@@ -48,6 +79,9 @@ export function PolicyHistoryView() {
     const policyId = Array.isArray(params.policyId) ? params.policyId[0] : (params.policyId ?? "")
     
     const { versions, allVersions, dateRange, setDateRange, isLoading } = usePolicyVersions(policyId)
+    const { data: categoryOptionsData } = usePolicyCategories()
+
+    const categoryOptions = useMemo(() => categoryOptionsData ?? [], [categoryOptionsData])
 
     if (isLoading) {
         return (
@@ -109,7 +143,11 @@ export function PolicyHistoryView() {
                         // Szukamy wersji o 1 mniejszej, a jeśli jest wyfiltrowana w 'versions',
                         // to pobieramy ją z 'allVersions' by poprawnie wyliczyć różnice.
                         const previousVersion = allVersions.find(v => (v.version || 0) === (version.version || 0) - 1)
-                        const changes = getModifiedFields(version, previousVersion)
+                        const changes = getModifiedFields(version, previousVersion, categoryOptions)
+                        const categoryLabel = resolveCategoryLabel(
+                            version.category ?? version.categoryId,
+                            categoryOptions
+                        )
 
                         return (
                             <div key={version.id} className="relative">
@@ -159,7 +197,7 @@ export function PolicyHistoryView() {
                                                 <div className="space-y-1">
                                                     <span className="text-xs text-muted-foreground block">Kategoria / Rola</span>
                                                     <span className="font-semibold">
-                                                        {version.category ?? "—"} / {version.authorizedRole ?? "—"}
+                                                        {categoryLabel} / {version.authorizedRole ?? "—"}
                                                     </span>
                                                 </div>
                                                 <div className="col-span-2 md:col-span-4 space-y-1">

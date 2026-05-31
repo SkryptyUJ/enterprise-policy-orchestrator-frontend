@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { Receipt, CalendarDays, DollarSign, Tag, FileText, Loader2 } from "lucide-react"
@@ -25,16 +25,7 @@ import {
 } from "@/components/ui/card"
 import { ApiError } from "@/lib/apiClient"
 import { useCreateExpenseRequest } from "../hooks/useCreateExpenseRequest"
-
-const CATEGORIES = [
-    "Podróż służbowa",
-    "Sprzęt biurowy",
-    "Szkolenia",
-    "Oprogramowanie",
-    "Reprezentacja",
-    "Transport",
-    "Inne",
-]
+import { usePolicyCategories } from "@/features/policy/hooks/usePolicies"
 
 function getTodayString() {
     return new Date().toISOString().slice(0, 10)
@@ -43,6 +34,12 @@ function getTodayString() {
 export function ExpenseRequestForm() {
     const router = useRouter()
     const { mutate, isPending } = useCreateExpenseRequest()
+    const { data: categoryOptionsData, isLoading: isCategoryOptionsLoading } = usePolicyCategories()
+
+    const categoryOptions = useMemo(
+        () => (categoryOptionsData ?? []).map((option) => ({ label: option.label, value: option.value })),
+        [categoryOptionsData]
+    )
 
     const [form, setForm] = useState({
         amount: "",
@@ -157,13 +154,21 @@ export function ExpenseRequestForm() {
                             onValueChange={handleCategoryChange}
                             required
                         >
-                            <SelectTrigger id="category" className="w-full">
-                                <SelectValue placeholder="Wybierz kategorię" />
+                            <SelectTrigger
+                                id="category"
+                                className="w-full"
+                                disabled={isCategoryOptionsLoading || categoryOptions.length === 0}
+                            >
+                                <SelectValue
+                                    placeholder={
+                                        isCategoryOptionsLoading ? "Ładowanie kategorii..." : "Wybierz kategorię"
+                                    }
+                                />
                             </SelectTrigger>
                             <SelectContent>
-                                {CATEGORIES.map((cat) => (
-                                    <SelectItem key={cat} value={cat}>
-                                        {cat}
+                                {categoryOptions.map((cat) => (
+                                    <SelectItem key={cat.value} value={cat.value}>
+                                        {cat.label}
                                     </SelectItem>
                                 ))}
                             </SelectContent>

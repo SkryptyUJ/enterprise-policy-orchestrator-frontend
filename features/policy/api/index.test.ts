@@ -31,31 +31,31 @@ const mockPolicy: Policy = {
 }
 
 describe("getAllPolicies", () => {
-    it("wysyła GET na poprawny URL z userId", async () => {
+    it("wysyła GET na poprawny URL", async () => {
         const client = createMockClient()
         client.get.mockResolvedValue([mockPolicy])
 
-        const result = await getAllPolicies(client, "1")
+        const result = await getAllPolicies(client)
 
         expect(client.get).toHaveBeenCalledOnce()
-        expect(client.get).toHaveBeenCalledWith("/api/users/1/policies")
+        expect(client.get).toHaveBeenCalledWith("/api/policies")
         expect(result).toEqual([mockPolicy])
     })
 
-    it("przekazuje userId w URL", async () => {
+    it("używa endpointu listy polityk", async () => {
         const client = createMockClient()
         client.get.mockResolvedValue([])
 
-        await getAllPolicies(client, "42")
+        await getAllPolicies(client)
 
-        expect(client.get).toHaveBeenCalledWith("/api/users/42/policies")
+        expect(client.get).toHaveBeenCalledWith("/api/policies")
     })
 
     it("propaguje błąd z klienta API", async () => {
         const client = createMockClient()
         client.get.mockRejectedValue(new Error("Request failed: 500"))
 
-        await expect(getAllPolicies(client, "1")).rejects.toThrow("Request failed: 500")
+        await expect(getAllPolicies(client)).rejects.toThrow("Request failed: 500")
     })
 })
 
@@ -86,24 +86,24 @@ describe("setPolicyExpiration", () => {
         const updatedPolicy = { ...mockPolicy, expiresAt: expirationDto.expiresAt }
         client.patch.mockResolvedValue(updatedPolicy)
 
-        const result = await setPolicyExpiration(client, "1", 5, expirationDto)
+        const result = await setPolicyExpiration(client, 5, expirationDto)
 
         expect(client.patch).toHaveBeenCalledOnce()
         expect(client.patch).toHaveBeenCalledWith(
-            "/api/users/1/policies/5/expiration",
+            "/api/policies/5/expiration",
             expirationDto
         )
         expect(result).toEqual(updatedPolicy)
     })
 
-    it("przekazuje userId i policyId w URL", async () => {
+    it("przekazuje policyId w URL", async () => {
         const client = createMockClient()
         client.patch.mockResolvedValue(mockPolicy)
 
-        await setPolicyExpiration(client, "42", 99, expirationDto)
+        await setPolicyExpiration(client, 99, expirationDto)
 
         expect(client.patch).toHaveBeenCalledWith(
-            "/api/users/42/policies/99/expiration",
+            "/api/policies/99/expiration",
             expirationDto
         )
     })
@@ -112,7 +112,7 @@ describe("setPolicyExpiration", () => {
         const client = createMockClient()
         client.patch.mockRejectedValue(new Error("Request failed: 404"))
 
-        await expect(setPolicyExpiration(client, "1", 999, expirationDto)).rejects.toThrow(
+        await expect(setPolicyExpiration(client, 999, expirationDto)).rejects.toThrow(
             "Request failed: 404"
         )
     })

@@ -33,61 +33,56 @@ export interface ApproveExpenseRequestDto {
 
 const API_BASE = "/api"
 
-export function fetchExpenseRequests(client: ApiClient, userId: string) {
-    return client.get<ExpenseRequest[]>(`${API_BASE}/users/${userId}/expense-requests`)
+export function fetchExpenseRequests(client: ApiClient) {
+    return client.get<ExpenseRequest[]>(`${API_BASE}/expense-requests`)
 }
 
-export function fetchExpenseRequestsForReview(client: ApiClient, userId: string) {
-    return client.get<ExpenseRequest[]>(`${API_BASE}/users/${userId}/expense-requests/review`)
+export function fetchExpenseRequestsForReview(client: ApiClient) {
+    return client.get<ExpenseRequest[]>(`${API_BASE}/expense-requests/review`)
 }
 
 export function fetchExpenseRequestDetails(
     client: ApiClient,
-    userId: string,
     expenseRequestId: string
 ) {
-    return client.get<ExpenseRequestDetails>(`${API_BASE}/users/${userId}/expense-requests/${expenseRequestId}`)
+    return client.get<ExpenseRequestDetails>(`${API_BASE}/expense-requests/${expenseRequestId}`)
 }
 
 export function fetchExpenseRequestDetailsForReview(
     client: ApiClient,
-    userId: string,
     expenseRequestId: string
 ) {
-    return client.get<ExpenseRequestDetails>(`${API_BASE}/users/${userId}/expense-requests/review/${expenseRequestId}`)
+    return client.get<ExpenseRequestDetails>(`${API_BASE}/expense-requests/review/${expenseRequestId}`)
 }
 
 export function approveExpenseRequest(
     client: ApiClient,
-    userId: string,
     expenseRequestId: string,
     data: ApproveExpenseRequestDto
 ) {
     return client.patch<ExpenseRequestDetails>(
-        `${API_BASE}/users/${userId}/expense-requests/review/${expenseRequestId}/approve`,
+        `${API_BASE}/expense-requests/review/${expenseRequestId}/approve`,
         data
     )
 }
 
 export function declineExpenseRequest(
     client: ApiClient,
-    userId: string,
     expenseRequestId: string,
     data: ApproveExpenseRequestDto
 ) {
     return client.patch<ExpenseRequestDetails>(
-        `${API_BASE}/users/${userId}/expense-requests/review/${expenseRequestId}/decline`,
+        `${API_BASE}/expense-requests/review/${expenseRequestId}/decline`,
         data
     )
 }
 
 export function createExpenseRequest(
     client: ApiClient,
-    userId: string,
     data: CreateExpenseRequestDto
 ) {
     return client.post<ExpenseRequest>(
-        `${API_BASE}/users/${userId}/expense-requests`,
+        `${API_BASE}/expense-requests`,
         data
     )
 }

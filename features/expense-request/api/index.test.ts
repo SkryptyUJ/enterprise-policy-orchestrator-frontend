@@ -34,10 +34,10 @@ describe("createExpenseRequest", () => {
             delete: vi.fn(),
         }
 
-        const result = await createExpenseRequest(mockClient, "user-123", mockDto)
+        const result = await createExpenseRequest(mockClient, mockDto)
 
         expect(mockClient.post).toHaveBeenCalledOnce()
-        expect(mockClient.post).toHaveBeenCalledWith("/api/users/user-123/expense-requests", mockDto)
+        expect(mockClient.post).toHaveBeenCalledWith("/api/expense-requests", mockDto)
         expect(result).toEqual(mockResponse)
     })
 
@@ -50,7 +50,7 @@ describe("createExpenseRequest", () => {
             delete: vi.fn(),
         }
 
-        await expect(createExpenseRequest(mockClient, "user-123", mockDto)).rejects.toThrow("Request failed: 500")
+        await expect(createExpenseRequest(mockClient, mockDto)).rejects.toThrow("Request failed: 500")
     })
 })
 
@@ -64,9 +64,9 @@ describe("fetchExpenseRequests", () => {
             delete: vi.fn(),
         }
 
-        await fetchExpenseRequests(mockClient, "user-123")
+        await fetchExpenseRequests(mockClient)
 
-        expect(mockClient.get).toHaveBeenCalledWith("/api/users/user-123/expense-requests")
+        expect(mockClient.get).toHaveBeenCalledWith("/api/expense-requests")
     })
 })
 
@@ -80,9 +80,9 @@ describe("fetchExpenseRequestsForReview", () => {
             delete: vi.fn(),
         }
 
-        await fetchExpenseRequestsForReview(mockClient, "manager-1")
+        await fetchExpenseRequestsForReview(mockClient)
 
-        expect(mockClient.get).toHaveBeenCalledWith("/api/users/manager-1/expense-requests/review")
+        expect(mockClient.get).toHaveBeenCalledWith("/api/expense-requests/review")
     })
 })
 
@@ -96,9 +96,9 @@ describe("fetchExpenseRequestDetails", () => {
             delete: vi.fn(),
         }
 
-        await fetchExpenseRequestDetails(mockClient, "user-123", "exp-1")
+        await fetchExpenseRequestDetails(mockClient, "exp-1")
 
-        expect(mockClient.get).toHaveBeenCalledWith("/api/users/user-123/expense-requests/exp-1")
+        expect(mockClient.get).toHaveBeenCalledWith("/api/expense-requests/exp-1")
     })
 })
 
@@ -112,9 +112,9 @@ describe("fetchExpenseRequestDetailsForReview", () => {
             delete: vi.fn(),
         }
 
-        await fetchExpenseRequestDetailsForReview(mockClient, "manager-1", "exp-1")
+        await fetchExpenseRequestDetailsForReview(mockClient, "exp-1")
 
-        expect(mockClient.get).toHaveBeenCalledWith("/api/users/manager-1/expense-requests/review/exp-1")
+        expect(mockClient.get).toHaveBeenCalledWith("/api/expense-requests/review/exp-1")
     })
 })
 
@@ -128,12 +128,12 @@ describe("approveExpenseRequest", () => {
             delete: vi.fn(),
         }
 
-        await approveExpenseRequest(mockClient, "manager-1", "exp-1", {
+        await approveExpenseRequest(mockClient, "exp-1", {
             decisionRationale: "Zgodne z polityką",
         })
 
         expect(mockClient.patch).toHaveBeenCalledWith(
-            "/api/users/manager-1/expense-requests/review/exp-1/approve",
+            "/api/expense-requests/review/exp-1/approve",
             { decisionRationale: "Zgodne z polityką" }
         )
     })
@@ -149,14 +149,13 @@ describe("declineExpenseRequest", () => {
             delete: vi.fn(),
         }
 
-        await declineExpenseRequest(mockClient, "manager-1", "exp-1", {
+        await declineExpenseRequest(mockClient, "exp-1", {
             decisionRationale: "Poza zakresem polityki",
         })
 
         expect(mockClient.patch).toHaveBeenCalledWith(
-            "/api/users/manager-1/expense-requests/review/exp-1/decline",
+            "/api/expense-requests/review/exp-1/decline",
             { decisionRationale: "Poza zakresem polityki" }
         )
     })
 })
-
