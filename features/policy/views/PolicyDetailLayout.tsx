@@ -1,11 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import Link from "next/link"
 import { FileText, History, Calendar, DollarSign, Tag, CheckCircle2, Shield, Loader2, Info, CalendarOff, Pencil } from "lucide-react"
 import { PolicyHistoryView } from "./PolicyHistoryView"
 import { usePolicyVersions } from "../hooks/usePolicyVersions"
-import { usePolicyDetail } from "../hooks/usePolicies"
+import { usePolicyCategories, usePolicyDetail } from "../hooks/usePolicies"
 import { SetExpirationDialog } from "../components/SetExpirationDialog"
 import { RoleGuard } from "@/features/auth/components/RoleGuard"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -19,11 +19,26 @@ export function PolicyDetailLayout({ policyId }: PolicyDetailLayoutProps) {
     const [showHistory, setShowHistory] = useState(false)
     const { allVersions } = usePolicyVersions(policyId)
     const { data: policy, isLoading, isError } = usePolicyDetail(policyId)
+    const { data: categoryOptionsData } = usePolicyCategories()
 
     const currentPolicy = policy || (allVersions.length > 0 ? allVersions[allVersions.length - 1] : null)
 
     const isExpired = currentPolicy?.expiresAt ? new Date(currentPolicy.expiresAt) <= new Date() : false
     const isActive = currentPolicy?.isValid && !isExpired
+
+    const categoryLabel = useMemo(() => {
+        if (!currentPolicy?.category) {
+            return "Brak"
+        }
+
+        const categoryValue = String(currentPolicy.category)
+        const matchedOption = (categoryOptionsData ?? []).find(
+            (option) => option.value === categoryValue || String(option.id) === categoryValue
+        )
+
+        return matchedOption?.label ?? categoryValue
+    }, [currentPolicy?.category, categoryOptionsData])
+
     if (isLoading) {
         return (
             <div className="flex h-[50vh] items-center justify-center">
@@ -148,7 +163,7 @@ export function PolicyDetailLayout({ policyId }: PolicyDetailLayoutProps) {
                                         <Tag className="size-3.5" /> Kategoria
                                     </div>
                                     <div className="text-sm font-medium flex items-center gap-2">
-                                        <span className="px-2 py-0.5 bg-background rounded border text-xs">ID: {currentPolicy.category || "Brak"}</span>
+                                        <span className="px-2 py-0.5 bg-background rounded border text-xs">{categoryLabel}</span>
                                     </div>
                                 </div>
 

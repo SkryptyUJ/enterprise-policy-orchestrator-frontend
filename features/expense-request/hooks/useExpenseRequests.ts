@@ -22,7 +22,7 @@ export function useExpenseRequests() {
         queryKey: expenseRequestKeys.list(),
         queryFn: () => {
             if (!user) throw new Error("Brak zalogowanego użytkownika")
-            return fetchExpenseRequests(client, user.id)
+            return fetchExpenseRequests(client)
         },
         enabled: Boolean(user),
     })
@@ -37,9 +37,8 @@ export function useExpenseRequestDetails(expenseRequestId: string | null) {
         queryFn: () => {
             if (!user) throw new Error("Brak zalogowanego użytkownika")
             if (!expenseRequestId) throw new Error("Brak identyfikatora wniosku")
-            return fetchExpenseRequestDetails(client, user.id, expenseRequestId)
+            return fetchExpenseRequestDetails(client, expenseRequestId)
         },
         enabled: Boolean(user && expenseRequestId),
     })
 }
-

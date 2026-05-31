@@ -37,7 +37,7 @@ export function usePoliciesByUser() {
 
     return useQuery({
         queryKey: policyKeys.byUser(user?.id ?? ""),
-        queryFn: () => fetchPoliciesByUser(client, user!.id),
+        queryFn: () => fetchPoliciesByUser(client),
         enabled: !!user,
     })
 }
@@ -51,7 +51,7 @@ export function useCreatePolicy() {
         mutationFn: (data: CreatePolicyDto) => {
             if (!user) throw new Error("Brak zalogowanego użytkownika")
 
-            return createPolicy(client, data, user.id)
+            return createPolicy(client, data)
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: policyKeys.all })
@@ -71,7 +71,7 @@ export function usePolicyDetail(policyId: string) {
         queryFn: () => {
             if (!user) throw new Error("Brak zalogowanego użytkownika")
 
-            return getPolicyById(client, user.id, policyId)
+            return getPolicyById(client, policyId)
         },
         enabled: !!user && !!policyId,
     })
@@ -86,7 +86,7 @@ export function useUpdatePolicy(policyId: string) {
         mutationFn: (data: CreatePolicyDto) => {
             if (!user) throw new Error("Brak zalogowanego użytkownika")
 
-            return updatePolicy(client, data, user.id, policyId)
+            return updatePolicy(client, data, policyId)
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: policyKeys.all })
@@ -107,7 +107,7 @@ export function useAllPolicies() {
         queryFn: () => {
             if (!user) throw new Error("Brak zalogowanego użytkownika")
 
-            return getAllPolicies(client, user.id)
+            return getAllPolicies(client)
         },
         enabled: !!user,
     })
@@ -122,7 +122,7 @@ export function useSetPolicyExpiration(policyId: number) {
         mutationFn: (data: SetPolicyExpirationDto) => {
             if (!user) throw new Error("Brak zalogowanego użytkownika")
 
-            return setPolicyExpiration(client, user.id, policyId, data)
+            return setPolicyExpiration(client, policyId, data)
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: policyKeys.all })

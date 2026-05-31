@@ -52,30 +52,30 @@ export function fetchCategoryOptions(client: ApiClient) {
     return client.get<CategoryOption[]>("/api/categories")
 }
 
-export function fetchPoliciesByUser(client: ApiClient, userId: string) {
-    return client.get<Policy[]>(`/api/policies?userId=${userId}`)
+export function fetchPoliciesByUser(client: ApiClient) {
+    return client.get<Policy[]>("/api/policies")
 }
 
-export function createPolicy(client: ApiClient, data: CreatePolicyDto, userId: string) {
-    return client.post<Policy>(`/api/users/${userId}/policies`, data)
+export function createPolicy(client: ApiClient, data: CreatePolicyDto) {
+    return client.post<Policy>("/api/policies", data)
 }
 
-export function getPolicyById(client: ApiClient, userId: string, policyId: string) {
-    return client.get<Policy>(`/api/users/${userId}/policies/${policyId}`)
+export function getPolicyById(client: ApiClient, policyId: string) {
+    return client.get<Policy>(`/api/policies/${policyId}`)
 }
 
-export function updatePolicy(client: ApiClient, data: CreatePolicyDto, userId: string, policyId: string) {
-    return client.post<Policy>(`/api/users/${userId}/policies`, { ...data, policyId: data.policyId || String(policyId) })
+export function updatePolicy(client: ApiClient, data: CreatePolicyDto, policyId: string) {
+    return client.post<Policy>("/api/policies", { ...data, policyId: data.policyId || String(policyId) })
 }
 
-export function getPolicyHistory(client: ApiClient, userId: string, policyId: string) {
-    return client.get<Policy[]>(`/api/users/${userId}/policies/${policyId}/history`)
+export function getPolicyHistory(client: ApiClient, policyId: string) {
+    return client.get<Policy[]>(`/api/policies/${policyId}/history`)
 }
 
-export function getAllPolicies(client: ApiClient, userId: string) {
-    return client.get<Policy[]>(`/api/users/${userId}/policies`)
+export function getAllPolicies(client: ApiClient) {
+    return client.get<Policy[]>("/api/policies")
 }
 
-export function setPolicyExpiration(client: ApiClient, userId: string, policyId: number, data: SetPolicyExpirationDto) {
-    return client.patch<Policy>(`/api/users/${userId}/policies/${policyId}/expiration`, data)
+export function setPolicyExpiration(client: ApiClient, policyId: number, data: SetPolicyExpirationDto) {
+    return client.patch<Policy>(`/api/policies/${policyId}/expiration`, data)
 }

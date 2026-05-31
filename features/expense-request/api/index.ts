@@ -33,25 +33,23 @@ export interface ExpenseRequestDetails extends ExpenseRequest {
 
 const API_BASE = "/api"
 
-export function fetchExpenseRequests(client: ApiClient, userId: string) {
-    return client.get<ExpenseRequest[]>(`${API_BASE}/users/${userId}/expense-requests`)
+export function fetchExpenseRequests(client: ApiClient) {
+    return client.get<ExpenseRequest[]>(`${API_BASE}/expense-requests`)
 }
 
 export function fetchExpenseRequestDetails(
     client: ApiClient,
-    userId: string,
     expenseRequestId: string
 ) {
-    return client.get<ExpenseRequestDetails>(`${API_BASE}/users/${userId}/expense-requests/${expenseRequestId}`)
+    return client.get<ExpenseRequestDetails>(`${API_BASE}/expense-requests/${expenseRequestId}`)
 }
 
 export function createExpenseRequest(
     client: ApiClient,
-    userId: string,
     data: CreateExpenseRequestDto
 ) {
     return client.post<ExpenseRequest>(
-        `${API_BASE}/users/${userId}/expense-requests`,
+        `${API_BASE}/expense-requests`,
         data
     )
 }

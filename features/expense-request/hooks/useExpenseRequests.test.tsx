@@ -47,7 +47,7 @@ describe("useExpenseRequests", () => {
 
 		await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
-		expect(mockGet).toHaveBeenCalledWith("/api/users/1/expense-requests")
+		expect(mockGet).toHaveBeenCalledWith("/api/expense-requests")
 	})
 
 	it("pobiera szczegoly wskazanego wniosku", async () => {
@@ -59,7 +59,7 @@ describe("useExpenseRequests", () => {
 
 		await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
-		expect(mockGet).toHaveBeenCalledWith("/api/users/1/expense-requests/exp-1")
+		expect(mockGet).toHaveBeenCalledWith("/api/expense-requests/exp-1")
 	})
 })
 
