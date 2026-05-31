@@ -8,7 +8,7 @@ const mockActivePolicies = [
     {
         id: 1,
         name: "Polityka podróży",
-        isValid: true,
+        active: true,
         startsAt: "2026-01-01T00:00:00Z",
         expiresAt: null,
         minPrice: 100,
@@ -17,7 +17,7 @@ const mockActivePolicies = [
     {
         id: 2,
         name: "Polityka szkoleniowa",
-        isValid: true,
+        active: false,
         startsAt: "2025-01-01T00:00:00Z",
         expiresAt: "2025-06-01T00:00:00Z",
         minPrice: null,
@@ -66,10 +66,10 @@ describe("PolicyList", () => {
         expect(screen.getByText("Aktywna")).toBeInTheDocument()
     })
 
-    it("pokazuje status Wygasła dla polityki z datą expiresAt w przeszłości", () => {
+    it("pokazuje status Nieaktywna dla nieaktywnej polityki", () => {
         render(<PolicyList />, { wrapper: createWrapper() })
 
-        expect(screen.getByText("Wygasła")).toBeInTheDocument()
+        expect(screen.getByText("Nieaktywna")).toBeInTheDocument()
     })
 
     it("wyświetla spinner podczas ładowania", () => {

@@ -14,14 +14,6 @@ import {
 } from "@/components/ui/table"
 import { useAllPolicies } from "../hooks/usePolicies"
 
-function isPolicyActive(policy: { isValid: boolean | null; startsAt: string | null; expiresAt: string | null }) {
-    const now = new Date()
-    if (!policy.isValid) return false
-    if (policy.startsAt && new Date(policy.startsAt) > now) return false
-    if (policy.expiresAt && new Date(policy.expiresAt) <= now) return false
-    return true
-}
-
 function formatDate(dateStr: string | null) {
     if (!dateStr) return "—"
     return new Intl.DateTimeFormat("pl-PL", {
@@ -75,7 +67,7 @@ export function PolicyList() {
                 </TableHeader>
                 <TableBody>
                     {policies.map((policy) => {
-                        const active = isPolicyActive(policy)
+                        const active = policy.active === true
                         return (
                             <TableRow key={policy.id} className={!active ? "opacity-60" : undefined}>
                                 <TableCell className="font-medium">{policy.name}</TableCell>
@@ -87,17 +79,8 @@ export function PolicyList() {
                                         </Badge>
                                     ) : (
                                         <Badge variant="secondary" className="gap-1">
-                                            {policy.expiresAt && new Date(policy.expiresAt) <= new Date() ? (
-                                                <>
-                                                    <CalendarOff className="size-3" />
-                                                    Wygasła
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <XCircle className="size-3" />
-                                                    Nieaktywna
-                                                </>
-                                            )}
+                                            <XCircle className="size-3" />
+                                            Nieaktywna
                                         </Badge>
                                     )}
                                 </TableCell>
