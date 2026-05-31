@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import {
     Sheet,
     SheetContent,
@@ -10,6 +11,8 @@ import {
 import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Textarea } from "@/components/ui/textarea"
 import type { ExpenseRequestDetails } from "../api"
 import type { Policy } from "@/features/policy/api"
 
@@ -22,8 +25,17 @@ function formatPolicy(policy: Policy | null | undefined) {
 function getDecisionVariant(status: string | undefined) {
     const normalized = status?.toUpperCase()
     if (normalized === "APPROVED") return "default" as const
-    if (normalized === "REJECTED") return "destructive" as const
+    if (normalized === "DECLINED") return "destructive" as const
     return "secondary" as const
+}
+
+function getStatusLabel(status: string | null | undefined) {
+    const normalized = status?.toUpperCase()
+    if (normalized === "APPROVED") return "Zatwierdzony"
+    if (normalized === "DECLINED") return "Odrzucony"
+    if (normalized === "WAITING_FOR_APPROVAL") return "Oczekuje na decyzję"
+    if (normalized === "CANCELLED") return "Anulowany"
+    return status ?? "Brak"
 }
 
 type ExpenseRequestDetailsSheetProps = {
@@ -32,6 +44,10 @@ type ExpenseRequestDetailsSheetProps = {
     details: ExpenseRequestDetails | undefined
     isLoading: boolean
     isError: boolean
+    canApprove: boolean
+    onApprove: (decisionRationale: string) => Promise<void>
+    onDecline: (decisionRationale: string) => Promise<void>
+    isApproving: boolean
 }
 
 function formatDate(value: string | null | undefined) {
@@ -54,9 +70,9 @@ function formatCurrency(value: number | null | undefined) {
 
 function DetailRow({ label, value }: { label: string; value: string }) {
     return (
-        <div className="grid grid-cols-[160px_1fr] gap-3 py-2 text-sm">
+        <div className="grid grid-cols-[120px_minmax(0,1fr)] gap-3 py-2 text-sm sm:grid-cols-[160px_minmax(0,1fr)]">
             <span className="text-muted-foreground">{label}</span>
-            <span className="font-medium break-words">{value}</span>
+            <span className="min-w-0 font-medium break-all">{value}</span>
         </div>
     )
 }
@@ -67,7 +83,57 @@ export function ExpenseRequestDetailsSheet({
     details,
     isLoading,
     isError,
+    canApprove,
+    onApprove,
+    onDecline,
+    isApproving,
 }: ExpenseRequestDetailsSheetProps) {
+    const [decisionRationale, setDecisionRationale] = useState("")
+    const [decisionError, setDecisionError] = useState<string | null>(null)
+
+    useEffect(() => {
+        if (!open) return
+        setDecisionRationale("")
+        setDecisionError(null)
+    }, [open, details?.id])
+
+    const canApproveRequest =
+        canApprove && details?.status?.toUpperCase() === "WAITING_FOR_APPROVAL"
+
+    async function handleApproveClick() {
+        const trimmedRationale = decisionRationale.trim()
+
+        if (!trimmedRationale) {
+            setDecisionError("Uzasadnienie decyzji jest wymagane.")
+            return
+        }
+
+        try {
+            setDecisionError(null)
+            await onApprove(trimmedRationale)
+            setDecisionRationale("")
+        } catch {
+            setDecisionError("Nie udało się zatwierdzić wniosku. Spróbuj ponownie.")
+        }
+    }
+
+    async function handleDeclineClick() {
+        const trimmedRationale = decisionRationale.trim()
+
+        if (!trimmedRationale) {
+            setDecisionError("Uzasadnienie decyzji jest wymagane.")
+            return
+        }
+
+        try {
+            setDecisionError(null)
+            await onDecline(trimmedRationale)
+            setDecisionRationale("")
+        } catch {
+            setDecisionError("Nie udało się odrzucić wniosku. Spróbuj ponownie.")
+        }
+    }
+
     return (
         <Sheet open={open} onOpenChange={onOpenChange}>
             <SheetContent className="sm:max-w-xl">
@@ -96,22 +162,19 @@ export function ExpenseRequestDetailsSheet({
 
                     {!isLoading && !isError && details && (
                         <div>
-                            <DetailRow label="ID" value={details.id} />
-                            <DetailRow label="Status" value={details.status ?? "Brak"} />
+                            <DetailRow label="ID" value={String(details.id)} />
+                            <DetailRow label="Status" value={getStatusLabel(details.status)} />
                             <DetailRow label="Kwota" value={formatCurrency(details.amount)} />
                             <DetailRow label="Kategoria" value={details.category} />
                             <DetailRow label="Data wydatku" value={formatDate(details.expenseDate)} />
-                            <DetailRow label="Utworzono" value={formatDateTime(details.createdAt)} />
-                            <DetailRow label="Zaktualizowano" value={formatDateTime(details.updatedAt)} />
-                            <DetailRow label="Zatwierdzono" value={formatDateTime(details.approvedAt)} />
-                            <DetailRow label="Odrzucono" value={formatDateTime(details.rejectedAt)} />
+                            <DetailRow label="Złożono" value={formatDateTime(details.submittedAt)} />
                             <Separator className="my-2" />
                             <div className="space-y-3 py-2 text-sm">
                                 <div className="flex items-center gap-2">
                                     <Badge variant={getDecisionVariant(details.status)}>
-                                        Decyzja Managera
+                                        Decyzja managera
                                     </Badge>
-                                    <span className="text-muted-foreground">{details.status ?? "Brak"}</span>
+                                    <span className="text-muted-foreground">{getStatusLabel(details.status)}</span>
                                 </div>
                                 <DetailRow
                                     label="Zastosowana polityka"
@@ -128,10 +191,41 @@ export function ExpenseRequestDetailsSheet({
                                 <div className="space-y-2">
                                     <p className="text-muted-foreground">Uzasadnienie decyzji</p>
                                     <p className="rounded-md border bg-muted/20 p-3 leading-relaxed whitespace-pre-line">
-                                        {details.decisionRationale ?? details.rejectionReason ?? "Brak uzasadnienia."}
+                                        {details.decisionRationale ?? "Brak uzasadnienia."}
                                     </p>
                                 </div>
                             </div>
+
+                            {canApproveRequest && (
+                                <>
+                                    <Separator className="my-2" />
+                                    <div className="space-y-3 py-2 text-sm">
+                                        <p className="font-medium">Zatwierdź wniosek</p>
+                                        <div className="space-y-2">
+                                            <p className="text-muted-foreground">Uzasadnienie decyzji</p>
+                                            <Textarea
+                                                value={decisionRationale}
+                                                onChange={(event) => setDecisionRationale(event.target.value)}
+                                                placeholder="Podaj uzasadnienie decyzji dla użytkownika..."
+                                                rows={4}
+                                                disabled={isApproving}
+                                            />
+                                        </div>
+                                        {decisionError && (
+                                            <p className="text-sm text-destructive">{decisionError}</p>
+                                        )}
+                                        <div className="flex justify-end gap-2">
+                                            <Button variant="destructive" onClick={handleDeclineClick} disabled={isApproving}>
+                                                {isApproving ? "Przetwarzanie..." : "Odrzuć wniosek"}
+                                            </Button>
+                                            <Button onClick={handleApproveClick} disabled={isApproving}>
+                                                {isApproving ? "Zatwierdzanie..." : "Zatwierdź wniosek"}
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+
                             <Separator className="my-2" />
                             <div className="space-y-2 py-2 text-sm">
                                 <p className="text-muted-foreground">Opis</p>

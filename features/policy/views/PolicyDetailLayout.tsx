@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react"
 import Link from "next/link"
-import { FileText, History, Calendar, DollarSign, Tag, CheckCircle2, Shield, Loader2, Info, CalendarOff, Pencil } from "lucide-react"
+import { FileText, History, Calendar, DollarSign, Tag, CheckCircle2, Shield, Loader2, Info, CalendarOff, Pencil, XCircle } from "lucide-react"
 import { PolicyHistoryView } from "./PolicyHistoryView"
 import { usePolicyVersions } from "../hooks/usePolicyVersions"
 import { usePolicyCategories, usePolicyDetail } from "../hooks/usePolicies"
@@ -27,7 +27,7 @@ export function PolicyDetailLayout({ policyId }: PolicyDetailLayoutProps) {
     const isActive = currentPolicy?.isValid && !isExpired
 
     const categoryLabel = useMemo(() => {
-        if (!currentPolicy?.category) {
+        if (currentPolicy?.category == null) {
             return "Brak"
         }
 
@@ -38,7 +38,6 @@ export function PolicyDetailLayout({ policyId }: PolicyDetailLayoutProps) {
 
         return matchedOption?.label ?? categoryValue
     }, [currentPolicy?.category, categoryOptionsData])
-
     if (isLoading) {
         return (
             <div className="flex h-[50vh] items-center justify-center">
@@ -116,17 +115,19 @@ export function PolicyDetailLayout({ policyId }: PolicyDetailLayoutProps) {
                                     </div>
                                     <CardTitle className="text-xl">{currentPolicy.name}</CardTitle>
                                 </div>
-                                {currentPolicy.isValid && (
-                                    isActive ? (
-                                        <span className="bg-green-100 text-green-700 border border-green-200 text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5 shadow-sm">
-                                            <CheckCircle2 className="size-3.5" /> Aktywna
-                                        </span>
-                                    ) : isExpired ? (
-                                        <span className="bg-amber-100 text-amber-700 border border-amber-200 text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5 shadow-sm">
-                                            <CalendarOff className="size-3.5" /> Wygasła
-                                        </span>
-                                    ) : null
-                                )}
+                                {isActive ? (
+                                    <span className="bg-green-100 text-green-700 border border-green-200 text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5 shadow-sm">
+                                        <CheckCircle2 className="size-3.5" /> Aktywna
+                                    </span>
+                                ) : isExpired ? (
+                                    <span className="bg-amber-100 text-amber-700 border border-amber-200 text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5 shadow-sm">
+                                        <CalendarOff className="size-3.5" /> Wygasła
+                                    </span>
+                                ) : currentPolicy.isValid === false ? (
+                                    <span className="bg-amber-100 text-amber-700 border border-amber-200 text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5 shadow-sm">
+                                        <XCircle className="size-3.5" /> Nieaktywna
+                                    </span>
+                                ) : null}
                             </div>
                         </CardHeader>
                         <CardContent className="pt-6 space-y-6">

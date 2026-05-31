@@ -27,7 +27,7 @@ const mockPolicy: Policy = {
     maxPrice: 5000,
     category: 1,
     authorizedRole: 2,
-    isValid: true,
+    active: true,
 }
 
 describe("getAllPolicies", () => {
