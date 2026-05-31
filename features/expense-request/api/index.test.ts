@@ -1,8 +1,12 @@
 import { describe, it, expect, vi } from "vitest"
 import {
+    approveExpenseRequest,
     createExpenseRequest,
+    declineExpenseRequest,
     fetchExpenseRequests,
+    fetchExpenseRequestsForReview,
     fetchExpenseRequestDetails,
+    fetchExpenseRequestDetailsForReview,
     type CreateExpenseRequestDto,
 } from "./index"
 
@@ -16,8 +20,9 @@ describe("createExpenseRequest", () => {
 
     const mockResponse = {
         id: "abc-123",
+        userId: "user-123",
         ...mockDto,
-        createdAt: "2026-03-26T10:00:00Z",
+        submittedAt: "2026-03-26T10:00:00Z",
     }
 
     it("wysyła POST na poprawny URL z danymi", async () => {
@@ -65,6 +70,22 @@ describe("fetchExpenseRequests", () => {
     })
 })
 
+describe("fetchExpenseRequestsForReview", () => {
+    it("wysyła GET na endpoint review", async () => {
+        const mockClient = {
+            get: vi.fn().mockResolvedValue([]),
+            post: vi.fn(),
+            put: vi.fn(),
+            patch: vi.fn(),
+            delete: vi.fn(),
+        }
+
+        await fetchExpenseRequestsForReview(mockClient, "manager-1")
+
+        expect(mockClient.get).toHaveBeenCalledWith("/api/users/manager-1/expense-requests/review")
+    })
+})
+
 describe("fetchExpenseRequestDetails", () => {
     it("wysyła GET na endpoint szczegółów", async () => {
         const mockClient = {
@@ -78,6 +99,64 @@ describe("fetchExpenseRequestDetails", () => {
         await fetchExpenseRequestDetails(mockClient, "user-123", "exp-1")
 
         expect(mockClient.get).toHaveBeenCalledWith("/api/users/user-123/expense-requests/exp-1")
+    })
+})
+
+describe("fetchExpenseRequestDetailsForReview", () => {
+    it("wysyła GET na endpoint szczegółów review", async () => {
+        const mockClient = {
+            get: vi.fn().mockResolvedValue({ id: "exp-1" }),
+            post: vi.fn(),
+            put: vi.fn(),
+            patch: vi.fn(),
+            delete: vi.fn(),
+        }
+
+        await fetchExpenseRequestDetailsForReview(mockClient, "manager-1", "exp-1")
+
+        expect(mockClient.get).toHaveBeenCalledWith("/api/users/manager-1/expense-requests/review/exp-1")
+    })
+})
+
+describe("approveExpenseRequest", () => {
+    it("wysyła PATCH z uzasadnieniem decyzji", async () => {
+        const mockClient = {
+            get: vi.fn(),
+            post: vi.fn(),
+            put: vi.fn(),
+            patch: vi.fn().mockResolvedValue({ id: "exp-1", status: "APPROVED" }),
+            delete: vi.fn(),
+        }
+
+        await approveExpenseRequest(mockClient, "manager-1", "exp-1", {
+            decisionRationale: "Zgodne z polityką",
+        })
+
+        expect(mockClient.patch).toHaveBeenCalledWith(
+            "/api/users/manager-1/expense-requests/review/exp-1/approve",
+            { decisionRationale: "Zgodne z polityką" }
+        )
+    })
+})
+
+describe("declineExpenseRequest", () => {
+    it("wysyła PATCH z uzasadnieniem decyzji dla odrzucenia", async () => {
+        const mockClient = {
+            get: vi.fn(),
+            post: vi.fn(),
+            put: vi.fn(),
+            patch: vi.fn().mockResolvedValue({ id: "exp-1", status: "DECLINED" }),
+            delete: vi.fn(),
+        }
+
+        await declineExpenseRequest(mockClient, "manager-1", "exp-1", {
+            decisionRationale: "Poza zakresem polityki",
+        })
+
+        expect(mockClient.patch).toHaveBeenCalledWith(
+            "/api/users/manager-1/expense-requests/review/exp-1/decline",
+            { decisionRationale: "Poza zakresem polityki" }
+        )
     })
 })
 

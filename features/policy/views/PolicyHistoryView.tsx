@@ -146,9 +146,9 @@ export function PolicyHistoryView() {
                                                     <span className="text-xs text-muted-foreground block">Aktywna</span>
                                                     <span className="font-semibold">{version.isValid ? "Tak" : "Nie"}</span>
                                                 </div>
-                                                <div className="space-y-1">
+                                                <div className="space-y-1 min-w-0">
                                                     <span className="text-xs text-muted-foreground block">User ID (Autor)</span>
-                                                    <span className="font-semibold">{version.authorUserId ?? "Brak"}</span>
+                                                    <span className="font-semibold break-all">{version.authorUserId ?? "Brak"}</span>
                                                 </div>
                                                 <div className="space-y-1">
                                                     <span className="text-xs text-muted-foreground block">Cena min / max</span>

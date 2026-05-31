@@ -4,9 +4,18 @@ import userEvent from "@testing-library/user-event"
 import { ExpenseRequestHistoryList, sortRequests } from "./ExpenseRequestHistoryList"
 import { useExpenseRequestDetails, useExpenseRequests } from "../hooks/useExpenseRequests"
 
+vi.mock("@/features/auth/hooks/useAuth", () => ({
+    useAuth: () => ({
+        user: { id: "1", email: "test@example.com", name: "Test", roles: ["employee"] },
+        isLoading: false,
+    }),
+}))
+
 vi.mock("../hooks/useExpenseRequests", () => ({
     useExpenseRequests: vi.fn(),
     useExpenseRequestDetails: vi.fn(),
+    useApproveExpenseRequest: vi.fn(() => ({ mutateAsync: vi.fn(), isPending: false })),
+    useDeclineExpenseRequest: vi.fn(() => ({ mutateAsync: vi.fn(), isPending: false })),
 }))
 
 vi.mock("./ExpenseRequestDetailsSheet", () => ({
@@ -57,19 +66,21 @@ describe("ExpenseRequestHistoryList", () => {
             data: [
                 {
                     id: "exp-1",
+                    userId: "user-1",
                     amount: 123,
                     category: "Transport",
                     description: "Taxi",
                     expenseDate: "2026-03-20",
-                    createdAt: "2026-03-21T10:00:00Z",
+                    submittedAt: "2026-03-21T10:00:00Z",
                 },
                 {
                     id: "exp-2",
+                    userId: "user-1",
                     amount: 45,
                     category: "Wyżywienie",
                     description: "Lunch",
                     expenseDate: "2026-03-22",
-                    createdAt: "2026-03-22T10:00:00Z",
+                    submittedAt: "2026-03-22T10:00:00Z",
                 },
             ],
             isLoading: false,
@@ -89,19 +100,21 @@ describe("ExpenseRequestHistoryList", () => {
             [
                 {
                     id: "exp-1",
+                    userId: "user-1",
                     amount: 123,
                     category: "Transport",
                     description: "Taxi",
                     expenseDate: "2026-03-20",
-                    createdAt: "2026-03-21T10:00:00Z",
+                    submittedAt: "2026-03-21T10:00:00Z",
                 },
                 {
                     id: "exp-2",
+                    userId: "user-1",
                     amount: 45,
                     category: "Wyżywienie",
                     description: "Lunch",
                     expenseDate: "2026-03-22",
-                    createdAt: "2026-03-22T10:00:00Z",
+                    submittedAt: "2026-03-22T10:00:00Z",
                 },
             ],
             "amount",
@@ -118,11 +131,12 @@ describe("ExpenseRequestHistoryList", () => {
             data: [
                 {
                     id: "exp-1",
+                    userId: "user-1",
                     amount: 123,
                     category: "Transport",
                     description: "Taxi",
                     expenseDate: "2026-03-20",
-                    createdAt: "2026-03-21T10:00:00Z",
+                    submittedAt: "2026-03-21T10:00:00Z",
                 },
             ],
             isLoading: false,
