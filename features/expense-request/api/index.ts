@@ -20,6 +20,7 @@ export interface ExpenseRequest {
     submittedAt: string
     status?: string
     appliedPolicy?: Policy | null
+    conflictingPolicyNames?: string[] | null
     decisionRationale?: string | null
     decidedBy?: string | null
     decidedAt?: string | null

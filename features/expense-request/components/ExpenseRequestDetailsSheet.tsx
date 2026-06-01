@@ -26,6 +26,7 @@ function getDecisionVariant(status: string | undefined) {
     const normalized = status?.toUpperCase()
     if (normalized === "APPROVED") return "default" as const
     if (normalized === "DECLINED") return "destructive" as const
+    if (normalized === "REQUIRES_ESCALATION") return "outline" as const
     return "secondary" as const
 }
 
@@ -33,9 +34,15 @@ function getStatusLabel(status: string | null | undefined) {
     const normalized = status?.toUpperCase()
     if (normalized === "APPROVED") return "Zatwierdzony"
     if (normalized === "DECLINED") return "Odrzucony"
+    if (normalized === "REQUIRES_ESCALATION") return "Wymaga eskalacji"
     if (normalized === "WAITING_FOR_APPROVAL") return "Oczekuje na decyzję"
     if (normalized === "CANCELLED") return "Anulowany"
     return status ?? "Brak"
+}
+
+function formatConflictingPolicies(policyNames: string[] | null | undefined) {
+    if (!policyNames || policyNames.length === 0) return "-"
+    return policyNames.join(", ")
 }
 
 type ExpenseRequestDetailsSheetProps = {
@@ -98,7 +105,7 @@ export function ExpenseRequestDetailsSheet({
     }, [open, details?.id])
 
     const canApproveRequest =
-        canApprove && details?.status?.toUpperCase() === "WAITING_FOR_APPROVAL"
+        canApprove && ["WAITING_FOR_APPROVAL", "REQUIRES_ESCALATION"].includes(details?.status?.toUpperCase() ?? "")
 
     async function handleApproveClick() {
         const trimmedRationale = decisionRationale.trim()
@@ -179,6 +186,10 @@ export function ExpenseRequestDetailsSheet({
                                 <DetailRow
                                     label="Zastosowana polityka"
                                     value={formatPolicy(details.appliedPolicy)}
+                                />
+                                <DetailRow
+                                    label="Konflikt polityk"
+                                    value={formatConflictingPolicies(details.conflictingPolicyNames)}
                                 />
                                 <DetailRow
                                     label="Decyzję podjął"
