@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest"
-import { fetchCategoryOptions, getAllPolicies, setPolicyExpiration, type Policy, type SetPolicyExpirationDto } from "./index"
+import { fetchCategoryOptions, getAllPolicies, getPolicyHistory, setPolicyExpiration, type Policy, type SetPolicyExpirationDto } from "./index"
 
 function createMockClient() {
     return {
@@ -16,6 +16,7 @@ const mockPolicy: Policy = {
     policyId: null,
     authorUserId: 1,
     categoryId: 1,
+    categoryLabel: "Sprzęt biurowy",
     name: "Polityka podróży",
     description: "Zasady rozliczania podróży służbowych",
     version: 1,
@@ -25,7 +26,6 @@ const mockPolicy: Policy = {
     expiresAt: null,
     minPrice: 100,
     maxPrice: 5000,
-    category: 1,
     authorizedRole: 2,
     active: true,
 }
@@ -63,7 +63,7 @@ describe("fetchCategoryOptions", () => {
     it("wysyła GET na endpoint kategorii", async () => {
         const client = createMockClient()
         client.get.mockResolvedValue([
-            { id: 1, value: "1", label: "Sprzęt biurowy" },
+            { id: 1, label: "Sprzęt biurowy" },
         ])
 
         const result = await fetchCategoryOptions(client)
@@ -71,8 +71,21 @@ describe("fetchCategoryOptions", () => {
         expect(client.get).toHaveBeenCalledOnce()
         expect(client.get).toHaveBeenCalledWith("/api/categories")
         expect(result).toEqual([
-            { id: 1, value: "1", label: "Sprzęt biurowy" },
+            { id: 1, label: "Sprzęt biurowy" },
         ])
+    })
+})
+
+describe("getPolicyHistory", () => {
+    it("wysyła GET na endpoint historii konkretnej polityki", async () => {
+        const client = createMockClient()
+        client.get.mockResolvedValue([mockPolicy])
+
+        const result = await getPolicyHistory(client, "42")
+
+        expect(client.get).toHaveBeenCalledOnce()
+        expect(client.get).toHaveBeenCalledWith("/api/policies/42/history")
+        expect(result).toEqual([mockPolicy])
     })
 })
 

@@ -52,7 +52,7 @@ const SelectField = <T extends Record<string, unknown>>({
           )}
           <Select
             onValueChange={field.onChange}
-            defaultValue={field.value}
+            value={field.value === null || field.value === undefined ? "" : String(field.value)}
             disabled={disabled}
           >
             <FormControl>

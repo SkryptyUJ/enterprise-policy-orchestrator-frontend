@@ -7,6 +7,7 @@ export interface Policy {
     policyId: number | null
     authorUserId: number | null
     categoryId: number | null
+    categoryLabel: string | null
     name: string
     description: string | null
     version: number | null
@@ -16,13 +17,13 @@ export interface Policy {
     expiresAt: string | null
     minPrice: number | null
     maxPrice: number | null
-    category: number | null
     authorizedRole: number | null
     active: boolean | null
+    isValid?: boolean | null
 }
 
 export interface CreatePolicyDto {
-    policyId?: string
+    policyId?: string | null
     categoryId?: number
     name: string
     description?: string
@@ -30,7 +31,6 @@ export interface CreatePolicyDto {
     expiresAt?: string
     minPrice?: number
     maxPrice?: number
-    category?: number
     authorizedRole?: number
 }
 
@@ -40,7 +40,6 @@ export interface SetPolicyExpirationDto {
 
 export interface CategoryOption {
     id: number
-    value: string
     label: string
 }
 

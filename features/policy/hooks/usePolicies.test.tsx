@@ -10,6 +10,7 @@ const mockPolicies = [
         policyId: null,
         authorUserId: 1,
         categoryId: 1,
+        categoryLabel: "Sprzęt biurowy",
         name: "Polityka podróży",
         description: null,
         version: 1,
@@ -19,7 +20,6 @@ const mockPolicies = [
         expiresAt: null,
         minPrice: null,
         maxPrice: null,
-        category: 1,
         authorizedRole: 2,
         active: true,
     },
@@ -52,9 +52,13 @@ function createWrapper() {
             mutations: { retry: false },
         },
     })
-    return ({ children }: { children: ReactNode }) => (
-        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-    )
+    function TestQueryClientProvider({ children }: { children: ReactNode }) {
+        return (
+            <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+        )
+    }
+
+    return TestQueryClientProvider
 }
 
 describe("useAllPolicies", () => {

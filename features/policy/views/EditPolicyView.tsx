@@ -7,9 +7,9 @@ import { ArrowLeft, FileText, ShieldCheck, Layers, Clock, Info, Loader2 } from "
 import { useEffect } from "react"
 import { Form } from "@/components/ui/form"
 import { Button } from "@/components/ui/button"
-import { InputField, TextareaField } from "@/components/shared"
+import { InputField, SelectField, TextareaField } from "@/components/shared"
 import { createPolicySchema, type CreatePolicyFormValues } from "../schemas/createPolicy.schema"
-import { usePolicyDetail, useUpdatePolicy } from "../hooks/usePolicies"
+import { usePolicyCategories, usePolicyDetail, useUpdatePolicy } from "../hooks/usePolicies"
 
 const POLICY_FEATURES = [
     {
@@ -37,6 +37,7 @@ export function EditPolicyView({ policyId }: EditPolicyViewProps) {
     const router = useRouter()
 
     const { data: policy, isLoading: isFetching, isError: isFetchError } = usePolicyDetail(policyId)
+    const { data: categoryOptionsData, isLoading: isCategoryOptionsLoading } = usePolicyCategories()
 
     const { mutate: updatePolicy, isPending, isError, error } = useUpdatePolicy(policyId)
 
@@ -46,13 +47,17 @@ export function EditPolicyView({ policyId }: EditPolicyViewProps) {
         mode: "onTouched",
     })
 
+    const categoryOptions = (categoryOptionsData ?? []).map((option) => ({
+        label: option.label,
+        value: String(option.id),
+    }))
+
     useEffect(() => {
         if (policy) {
             form.reset({
                 name: policy.name || "",
                 description: policy.description || "",
                 categoryId: policy.categoryId || undefined,
-                category: policy.category || undefined,
                 authorizedRole: policy.authorizedRole || undefined,
                 minPrice: policy.minPrice || undefined,
                 maxPrice: policy.maxPrice || undefined,
@@ -168,18 +173,13 @@ export function EditPolicyView({ policyId }: EditPolicyViewProps) {
                                 />
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                <InputField<CreatePolicyFormValues>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <SelectField<CreatePolicyFormValues>
                                     name="categoryId"
-                                    type="number"
-                                    label="ID Kategorii"
-                                    placeholder="np. 1"
-                                />
-                                <InputField<CreatePolicyFormValues>
-                                    name="category"
-                                    type="number"
                                     label="Kategoria"
-                                    placeholder="np. 1"
+                                    placeholder={isCategoryOptionsLoading ? "Ładowanie kategorii..." : "Wybierz kategorię"}
+                                    options={categoryOptions}
+                                    disabled={isCategoryOptionsLoading || categoryOptions.length === 0}
                                 />
                                 <InputField<CreatePolicyFormValues>
                                     name="authorizedRole"

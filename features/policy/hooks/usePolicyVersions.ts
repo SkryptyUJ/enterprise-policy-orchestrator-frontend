@@ -12,7 +12,7 @@ export function usePolicyVersions(policyId: string) {
         queryKey: ["policies", "history", policyId],
         queryFn: () => {
             if (!user) throw new Error("Brak zalogowanego użytkownika")
-            return getPolicyHistory(client, user.id, policyId)
+            return getPolicyHistory(client, policyId)
         },
         enabled: !!user && !!policyId,
     })
