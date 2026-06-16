@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useForm, type Resolver } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -57,27 +57,10 @@ export function CreatePolicyView() {
         () =>
             (categoryOptionsData ?? []).map((option) => ({
                 label: option.label,
-                value: option.value,
+                value: String(option.id),
             })),
         [categoryOptionsData]
     )
-
-    const selectedCategoryId = form.watch("categoryId")
-
-    useEffect(() => {
-        if (selectedCategoryId === undefined || selectedCategoryId === null) {
-            return
-        }
-
-        const nextCategory = Number(selectedCategoryId)
-        if (Number.isNaN(nextCategory)) {
-            return
-        }
-
-        if (form.getValues("category") !== nextCategory) {
-            form.setValue("category", nextCategory as never, { shouldValidate: true })
-        }
-    }, [selectedCategoryId, form])
 
     function handleApplyNowChange(checked: boolean) {
         setApplyNow(checked)
@@ -136,8 +119,6 @@ export function CreatePolicyView() {
 
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit as never)} className="space-y-6">
-                            <input type="hidden" {...form.register("category")} />
-
                             <InputField<CreatePolicyFormValues>
                                 name="name"
                                 label="Nazwa polityki"

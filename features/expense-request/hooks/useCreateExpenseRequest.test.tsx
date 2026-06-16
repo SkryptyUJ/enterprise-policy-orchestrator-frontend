@@ -10,9 +10,10 @@ vi.mock("@/lib/useApiClient", () => ({
         post: vi.fn().mockResolvedValue({
             id: "abc-123",
             amount: 1500,
-            category: "Podróż służbowa",
+            categoryId: 1,
+            categoryLabel: "Podróż służbowa",
             description: "Bilety",
-            expenseDate: "2026-03-20",
+            expenseDate: "2026-03-20T00:00:00",
             createdAt: "2026-03-26T10:00:00Z",
         }),
         put: vi.fn(),
@@ -32,9 +33,13 @@ function createWrapper() {
     const queryClient = new QueryClient({
         defaultOptions: { mutations: { retry: false } },
     })
-    return ({ children }: { children: ReactNode }) => (
+    function TestQueryClientProvider({ children }: { children: ReactNode }) {
+        return (
         <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-    )
+        )
+    }
+
+    return TestQueryClientProvider
 }
 
 describe("useCreateExpenseRequest", () => {
@@ -45,9 +50,9 @@ describe("useCreateExpenseRequest", () => {
 
         result.current.mutate({
             amount: 1500,
-            category: "Podróż służbowa",
+            categoryId: 1,
             description: "Bilety",
-            expenseDate: "2026-03-20",
+            expenseDate: "2026-03-20T00:00:00",
         })
 
         await waitFor(() => expect(result.current.isSuccess).toBe(true))

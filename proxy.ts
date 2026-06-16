@@ -3,8 +3,7 @@ import type { NextRequest } from "next/server"
 
 import { auth0 } from "./lib/auth0";
 
-const PUBLIC_PATHS = ["/"]
-const PROTECTED_PATHS = ["/dashboard", "/policy", "/expense-request"]
+const PROTECTED_PATHS = ["/dashboard", "/policy", "/expense-request", "/categories"]
 
 export async function proxy(request: NextRequest) {
     const session = await auth0.getSession(request);

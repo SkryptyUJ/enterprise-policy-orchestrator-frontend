@@ -29,14 +29,19 @@ vi.mock("../hooks/useCreateExpenseRequest", () => ({
 vi.mock("@/features/policy/hooks/usePolicies", () => ({
     usePolicyCategories: () => ({
         data: [
-            { id: 1, value: "1", label: "Sprzet biurowy" },
-            { id: 2, value: "2", label: "Podroze sluzbowe" },
-            { id: 3, value: "3", label: "Szkolenia" },
-            { id: 4, value: "4", label: "Posilki" },
+            { id: 1, label: "Sprzet biurowy" },
+            { id: 2, label: "Podroze sluzbowe" },
+            { id: 3, label: "Szkolenia" },
+            { id: 4, label: "Posilki" },
         ],
         isLoading: false,
     }),
 }))
+
+async function selectCategory(user: ReturnType<typeof userEvent.setup>) {
+    await user.click(screen.getByRole("combobox"))
+    await user.click(await screen.findByRole("option", { name: "Sprzet biurowy" }))
+}
 
 function createWrapper() {
     const queryClient = new QueryClient()
@@ -98,14 +103,16 @@ describe("ExpenseRequestForm", () => {
 
         const descInput = screen.getByLabelText(/opis/i)
         await user.type(descInput, "Podróż służbowa")
+        await selectCategory(user)
 
         await user.click(screen.getByRole("button", { name: /złóż wniosek/i }))
 
         expect(mockMutate).toHaveBeenCalledOnce()
         const [payload] = mockMutate.mock.calls[0]
         expect(payload.amount).toBe(1500)
+        expect(payload.categoryId).toBe(1)
         expect(payload.description).toBe("Podróż służbowa")
-        expect(payload.expenseDate).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+        expect(payload.expenseDate).toMatch(/^\d{4}-\d{2}-\d{2}T00:00:00$/)
     })
 
     it("po udanym utworzeniu przekierowuje do historii wniosków", async () => {
@@ -122,6 +129,7 @@ describe("ExpenseRequestForm", () => {
 
         const descInput = screen.getByLabelText(/opis/i)
         await user.type(descInput, "Podróż służbowa")
+        await selectCategory(user)
 
         await user.click(screen.getByRole("button", { name: /złóż wniosek/i }))
 
@@ -150,6 +158,7 @@ describe("ExpenseRequestForm", () => {
 
         const descInput = screen.getByLabelText(/opis/i)
         await user.type(descInput, "Podróż służbowa")
+        await selectCategory(user)
 
         await user.click(screen.getByRole("button", { name: /złóż wniosek/i }))
 
@@ -172,6 +181,7 @@ describe("ExpenseRequestForm", () => {
 
         const descInput = screen.getByLabelText(/opis/i)
         await user.type(descInput, "Podróż służbowa")
+        await selectCategory(user)
 
         await user.click(screen.getByRole("button", { name: /złóż wniosek/i }))
 

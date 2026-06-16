@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/sidebar"
 import { canAccess, type Role } from "@/features/auth/access-control"
 import { useAuth } from "@/features/auth/hooks/useAuth"
-import { LayoutDashboard, FileText, FilePlus, LogOut, ArrowLeftRight, ChevronRight, Settings, List } from "lucide-react"
+import { LayoutDashboard, FileText, FilePlus, LogOut, ArrowLeftRight, ChevronRight, Settings, List, Tags } from "lucide-react"
 import Link from "next/link"
 
 type NavItem = {
@@ -72,6 +72,12 @@ const MENU_CONFIG: NavGroup[] = [
                 url: "/policy/new",
                 icon: FilePlus,
                 roles: ["admin"]
+            },
+            {
+                title: "Kategorie",
+                url: "/categories",
+                icon: Tags,
+                roles: ["admin", "manager"]
             }
         ]
     },

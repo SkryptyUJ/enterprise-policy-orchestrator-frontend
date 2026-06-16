@@ -33,7 +33,6 @@ vi.mock("../hooks/usePolicyVersions", () => ({
 }))
 
 vi.mock("../hooks/usePolicies", () => ({
-    usePolicyCategories: () => ({ data: [] }),
     usePolicyDetail: () => ({
         data: {
             id: 42,
@@ -45,7 +44,8 @@ vi.mock("../hooks/usePolicies", () => ({
             expiresAt: null,
             minPrice: 100,
             maxPrice: 1000,
-            category: 1,
+            categoryId: 1,
+            categoryLabel: "Sprzęt biurowy",
             authorizedRole: 2,
             active: true,
             isValid: true,

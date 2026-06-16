@@ -13,9 +13,9 @@ import {
 describe("createExpenseRequest", () => {
     const mockDto: CreateExpenseRequestDto = {
         amount: 1500,
-        category: "Podróż służbowa",
+        categoryId: 1,
         description: "Bilety kolejowe do Krakowa",
-        expenseDate: "2026-03-20",
+        expenseDate: "2026-03-20T00:00:00",
     }
 
     const mockResponse = {

@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { CheckCircle2, XCircle, Eye, CalendarOff, Loader2 } from "lucide-react"
+import { CheckCircle2, XCircle, Eye, Loader2 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -58,6 +58,7 @@ export function PolicyList() {
                 <TableHeader>
                     <TableRow>
                         <TableHead>Nazwa</TableHead>
+                        <TableHead>Kategoria</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Obowiązuje od</TableHead>
                         <TableHead>Wygasa</TableHead>
@@ -71,6 +72,7 @@ export function PolicyList() {
                         return (
                             <TableRow key={policy.id} className={!active ? "opacity-60" : undefined}>
                                 <TableCell className="font-medium">{policy.name}</TableCell>
+                                <TableCell>{policy.categoryLabel ?? "—"}</TableCell>
                                 <TableCell>
                                     {active ? (
                                         <Badge variant="default" className="gap-1">

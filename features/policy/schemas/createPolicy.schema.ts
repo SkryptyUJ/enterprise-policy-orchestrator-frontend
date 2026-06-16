@@ -48,7 +48,6 @@ export const createPolicySchema = z.object({
     expiresAt: optionalDate,
     minPrice: optionalNumber,
     maxPrice: optionalNumber,
-    category: requiredNumber,
     authorizedRole: optionalNumber,
 })
 
