@@ -108,6 +108,26 @@ describe("ExpenseRequestForm", () => {
         expect(payload.expenseDate).toMatch(/^\d{4}-\d{2}-\d{2}$/)
     })
 
+    it("po udanym utworzeniu przekierowuje do historii wniosków", async () => {
+        const user = userEvent.setup()
+        mockMutate.mockImplementation((_payload, options) => {
+            options?.onSuccess?.()
+        })
+
+        render(<ExpenseRequestForm />, { wrapper: createWrapper() })
+
+        const amountInput = screen.getByLabelText(/kwota/i)
+        await user.clear(amountInput)
+        await user.type(amountInput, "1500")
+
+        const descInput = screen.getByLabelText(/opis/i)
+        await user.type(descInput, "Podróż służbowa")
+
+        await user.click(screen.getByRole("button", { name: /złóż wniosek/i }))
+
+        expect(mockPush).toHaveBeenCalledWith("/expense-request/history")
+    })
+
     it("ustawia dzisiejszą datę jako domyślną", () => {
         render(<ExpenseRequestForm />, { wrapper: createWrapper() })
 

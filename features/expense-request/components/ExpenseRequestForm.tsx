@@ -75,7 +75,7 @@ export function ExpenseRequestForm() {
             {
                 onSuccess: () => {
                     toast.success("Wniosek został złożony pomyślnie")
-                    router.push("/dashboard")
+                    router.push("/expense-request/history")
                 },
                 onError: (error) => {
                     if (error instanceof ApiError && error.status === 400) {

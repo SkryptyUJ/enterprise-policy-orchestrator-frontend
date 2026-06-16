@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react"
 import Link from "next/link"
+import { useSearchParams } from "next/navigation"
 import { FileText, History, Calendar, DollarSign, Tag, CheckCircle2, Shield, Loader2, Info, CalendarOff, Pencil, XCircle } from "lucide-react"
 import { PolicyHistoryView } from "./PolicyHistoryView"
 import { usePolicyVersions } from "../hooks/usePolicyVersions"
@@ -16,7 +17,8 @@ interface PolicyDetailLayoutProps {
 }
 
 export function PolicyDetailLayout({ policyId }: PolicyDetailLayoutProps) {
-    const [showHistory, setShowHistory] = useState(false)
+    const searchParams = useSearchParams()
+    const [showHistory, setShowHistory] = useState(() => searchParams.get("history") === "true")
     const { allVersions } = usePolicyVersions(policyId)
     const { data: policy, isLoading, isError } = usePolicyDetail(policyId)
     const { data: categoryOptionsData } = usePolicyCategories()

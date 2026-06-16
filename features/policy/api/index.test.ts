@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest"
-import { fetchCategoryOptions, getAllPolicies, setPolicyExpiration, type Policy, type SetPolicyExpirationDto } from "./index"
+import { fetchCategoryOptions, getAllPolicies, getPolicyHistory, setPolicyExpiration, type Policy, type SetPolicyExpirationDto } from "./index"
 
 function createMockClient() {
     return {
@@ -73,6 +73,19 @@ describe("fetchCategoryOptions", () => {
         expect(result).toEqual([
             { id: 1, value: "1", label: "Sprzęt biurowy" },
         ])
+    })
+})
+
+describe("getPolicyHistory", () => {
+    it("wysyła GET na endpoint historii konkretnej polityki", async () => {
+        const client = createMockClient()
+        client.get.mockResolvedValue([mockPolicy])
+
+        const result = await getPolicyHistory(client, "42")
+
+        expect(client.get).toHaveBeenCalledOnce()
+        expect(client.get).toHaveBeenCalledWith("/api/policies/42/history")
+        expect(result).toEqual([mockPolicy])
     })
 })
 

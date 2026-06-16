@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label"
 import { InputField, SelectField, TextareaField } from "@/components/shared"
 import { createPolicySchema, type CreatePolicyFormValues } from "../schemas/createPolicy.schema"
 import { useCreatePolicy, usePolicyCategories } from "../hooks/usePolicies"
-import { useUser } from "@auth0/nextjs-auth0"
+import type { Policy } from "../api"
 
 function toLocalDatetimeString(date: Date): string {
     const pad = (n: number) => String(n).padStart(2, "0")
@@ -36,6 +36,10 @@ const POLICY_FEATURES = [
         description: "Śledź kto i kiedy wprowadził zmiany w politykach.",
     },
 ]
+
+export function getCreatedPolicyHistoryPath(policy: Pick<Policy, "id">) {
+    return `/policy/${policy.id}?history=true`
+}
 
 export function CreatePolicyView() {
     const router = useRouter()
@@ -86,7 +90,7 @@ export function CreatePolicyView() {
 
     function onSubmit(values: CreatePolicyFormValues) {
         createPolicy(values, {
-            onSuccess: () => router.push("/policy/all"),
+            onSuccess: (createdPolicy) => router.push(getCreatedPolicyHistoryPath(createdPolicy)),
         })
     }
 
