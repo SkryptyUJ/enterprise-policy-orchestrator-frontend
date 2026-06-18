@@ -69,6 +69,7 @@ function getStatusVariant(status: string | undefined) {
 	const normalized = status?.toUpperCase()
 	if (normalized === "APPROVED") return "default" as const
 	if (normalized === "DECLINED") return "destructive" as const
+	if (normalized === "REQUIRES_ESCALATION") return "outline" as const
 	return "secondary" as const
 }
 
@@ -76,6 +77,7 @@ function getStatusLabel(status: string | undefined) {
 	const normalized = status?.toUpperCase()
 	if (normalized === "APPROVED") return "Zatwierdzony"
 	if (normalized === "DECLINED") return "Odrzucony"
+	if (normalized === "REQUIRES_ESCALATION") return "Wymaga eskalacji"
 	if (normalized === "WAITING_FOR_APPROVAL") return "Oczekuje"
 	if (normalized === "CANCELLED") return "Anulowany"
 	return status ?? "Brak"

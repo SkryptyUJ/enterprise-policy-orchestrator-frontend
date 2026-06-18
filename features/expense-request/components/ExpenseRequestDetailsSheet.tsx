@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import {
     Sheet,
     SheetContent,
@@ -26,6 +26,7 @@ function getDecisionVariant(status: string | undefined) {
     const normalized = status?.toUpperCase()
     if (normalized === "APPROVED") return "default" as const
     if (normalized === "DECLINED") return "destructive" as const
+    if (normalized === "REQUIRES_ESCALATION") return "outline" as const
     return "secondary" as const
 }
 
@@ -33,9 +34,15 @@ function getStatusLabel(status: string | null | undefined) {
     const normalized = status?.toUpperCase()
     if (normalized === "APPROVED") return "Zatwierdzony"
     if (normalized === "DECLINED") return "Odrzucony"
+    if (normalized === "REQUIRES_ESCALATION") return "Wymaga eskalacji"
     if (normalized === "WAITING_FOR_APPROVAL") return "Oczekuje na decyzję"
     if (normalized === "CANCELLED") return "Anulowany"
     return status ?? "Brak"
+}
+
+function formatConflictingPolicies(policyNames: string[] | null | undefined) {
+    if (!policyNames || policyNames.length === 0) return "-"
+    return policyNames.join(", ")
 }
 
 type ExpenseRequestDetailsSheetProps = {
@@ -78,16 +85,26 @@ function DetailRow({ label, value }: { label: string; value: string }) {
 }
 
 function ExpenseDecisionActions({
+    open,
+    detailsId,
     onApprove,
     onDecline,
     isApproving,
 }: {
+    open: boolean
+    detailsId?: number
     onApprove: (decisionRationale: string) => Promise<void>
     onDecline: (decisionRationale: string) => Promise<void>
     isApproving: boolean
 }) {
     const [decisionRationale, setDecisionRationale] = useState("")
     const [decisionError, setDecisionError] = useState<string | null>(null)
+
+    useEffect(() => {
+        if (!open) return
+        setDecisionRationale("")
+        setDecisionError(null)
+    }, [open, detailsId])
 
     async function handleApproveClick() {
         const trimmedRationale = decisionRationale.trim()
@@ -163,7 +180,7 @@ export function ExpenseRequestDetailsSheet({
     isApproving,
 }: ExpenseRequestDetailsSheetProps) {
     const canApproveRequest =
-        canApprove && details?.status?.toUpperCase() === "WAITING_FOR_APPROVAL"
+        canApprove && ["WAITING_FOR_APPROVAL", "REQUIRES_ESCALATION"].includes(details?.status?.toUpperCase() ?? "")
 
     return (
         <Sheet open={open} onOpenChange={onOpenChange}>
@@ -212,6 +229,10 @@ export function ExpenseRequestDetailsSheet({
                                     value={formatPolicy(details.appliedPolicy)}
                                 />
                                 <DetailRow
+                                    label="Konflikt polityk"
+                                    value={formatConflictingPolicies(details.conflictingPolicyNames)}
+                                />
+                                <DetailRow
                                     label="Decyzję podjął"
                                     value={details.decidedBy ?? "-"}
                                 />
@@ -232,6 +253,8 @@ export function ExpenseRequestDetailsSheet({
                                     <Separator className="my-2" />
                                     <ExpenseDecisionActions
                                         key={details.id}
+                                        open={open}
+                                        detailsId={details.id}
                                         onApprove={onApprove}
                                         onDecline={onDecline}
                                         isApproving={isApproving}
