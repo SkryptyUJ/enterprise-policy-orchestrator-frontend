@@ -1,14 +1,12 @@
 "use client"
 
-import { useMemo } from "react"
 import { usePolicyVersions } from "../hooks/usePolicyVersions"
-import { usePolicyCategories } from "../hooks/usePolicies"
 import { useParams } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { CategoryOption, Policy } from "../api"
-import { History, Search, ArrowRight, User, Loader2, Edit3, Calendar, AlertCircle } from "lucide-react"
+import { Policy } from "../api"
+import { History, Search, ArrowRight, Loader2, Edit3, Calendar, AlertCircle } from "lucide-react"
 
 const FIELD_LABELS: Partial<Record<keyof Policy, string>> = {
     name: "Nazwa",
@@ -17,47 +15,41 @@ const FIELD_LABELS: Partial<Record<keyof Policy, string>> = {
     expiresAt: "Do",
     minPrice: "Cena min.",
     maxPrice: "Cena max.",
-    category: "Kategoria",
-    categoryId: "ID kategorii",
+    categoryId: "Kategoria",
     authorizedRole: "Rola docelowa",
     active: "Aktywna (Status)"
 }
 
-function resolveCategoryLabel(rawValue: unknown, categoryOptions: CategoryOption[]) {
-    if (rawValue === null || rawValue === undefined || rawValue === "") {
+function resolveCategoryLabel(policy: Policy | undefined) {
+    if (!policy) {
         return "brak"
     }
 
-    const categoryValue = String(rawValue)
-    const matchedOption = categoryOptions.find(
-        (option) => option.value === categoryValue || String(option.id) === categoryValue
-    )
-
-    return matchedOption?.label ?? categoryValue
+    return policy.categoryLabel ?? (policy.categoryId == null ? "brak" : String(policy.categoryId))
 }
 
 function formatPolicyFieldValue(
     key: keyof Policy,
     rawValue: unknown,
-    categoryOptions: CategoryOption[]
+    policy: Policy | undefined
 ) {
     if (rawValue === null || rawValue === undefined || rawValue === "") {
         return "brak"
     }
 
-    if (key === "category" || key === "categoryId") {
-        return resolveCategoryLabel(rawValue, categoryOptions)
+    if (key === "categoryId") {
+        return resolveCategoryLabel(policy)
     }
 
     return String(rawValue)
 }
 
-function getModifiedFields(current: Policy, previous: Policy | undefined, categoryOptions: CategoryOption[]) {
+function getModifiedFields(current: Policy, previous: Policy | undefined) {
     if (!previous) return []
     
-    const diff: { key: string, label: string, oldVal: any, newVal: any }[] = []
+    const diff: { key: string, label: string, oldVal: string, newVal: string }[] = []
     const keysToCheck: (keyof Policy)[] = [
-        "name", "description", "startsAt", "expiresAt", "minPrice", "maxPrice", "category", "categoryId", "authorizedRole", "active"
+        "name", "description", "startsAt", "expiresAt", "minPrice", "maxPrice", "categoryId", "authorizedRole", "active"
     ]
 
     for (const key of keysToCheck) {
@@ -65,8 +57,8 @@ function getModifiedFields(current: Policy, previous: Policy | undefined, catego
             diff.push({
                 key,
                 label: FIELD_LABELS[key] || key,
-                oldVal: formatPolicyFieldValue(key, previous[key], categoryOptions),
-                newVal: formatPolicyFieldValue(key, current[key], categoryOptions)
+                oldVal: formatPolicyFieldValue(key, previous[key], previous),
+                newVal: formatPolicyFieldValue(key, current[key], current)
             })
         }
     }
@@ -79,9 +71,6 @@ export function PolicyHistoryView() {
     const policyId = Array.isArray(params.policyId) ? params.policyId[0] : (params.policyId ?? "")
     
     const { versions, allVersions, dateRange, setDateRange, isLoading } = usePolicyVersions(policyId)
-    const { data: categoryOptionsData } = usePolicyCategories()
-
-    const categoryOptions = useMemo(() => categoryOptionsData ?? [], [categoryOptionsData])
 
     if (isLoading) {
         return (
@@ -143,11 +132,8 @@ export function PolicyHistoryView() {
                         // Szukamy wersji o 1 mniejszej, a jeśli jest wyfiltrowana w 'versions',
                         // to pobieramy ją z 'allVersions' by poprawnie wyliczyć różnice.
                         const previousVersion = allVersions.find(v => (v.version || 0) === (version.version || 0) - 1)
-                        const changes = getModifiedFields(version, previousVersion, categoryOptions)
-                        const categoryLabel = resolveCategoryLabel(
-                            version.category ?? version.categoryId,
-                            categoryOptions
-                        )
+                        const changes = getModifiedFields(version, previousVersion)
+                        const categoryLabel = resolveCategoryLabel(version)
 
                         return (
                             <div key={version.id} className="relative">

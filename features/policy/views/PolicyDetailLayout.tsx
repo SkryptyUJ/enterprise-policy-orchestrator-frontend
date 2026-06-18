@@ -1,11 +1,12 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useState } from "react"
 import Link from "next/link"
+import { useSearchParams } from "next/navigation"
 import { FileText, History, Calendar, DollarSign, Tag, CheckCircle2, Shield, Loader2, Info, CalendarOff, Pencil, XCircle } from "lucide-react"
 import { PolicyHistoryView } from "./PolicyHistoryView"
 import { usePolicyVersions } from "../hooks/usePolicyVersions"
-import { usePolicyCategories, usePolicyDetail } from "../hooks/usePolicies"
+import { usePolicyDetail } from "../hooks/usePolicies"
 import { SetExpirationDialog } from "../components/SetExpirationDialog"
 import { RoleGuard } from "@/features/auth/components/RoleGuard"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -16,28 +17,17 @@ interface PolicyDetailLayoutProps {
 }
 
 export function PolicyDetailLayout({ policyId }: PolicyDetailLayoutProps) {
-    const [showHistory, setShowHistory] = useState(false)
+    const searchParams = useSearchParams()
+    const [showHistory, setShowHistory] = useState(() => searchParams.get("history") === "true")
     const { allVersions } = usePolicyVersions(policyId)
     const { data: policy, isLoading, isError } = usePolicyDetail(policyId)
-    const { data: categoryOptionsData } = usePolicyCategories()
 
     const currentPolicy = policy || (allVersions.length > 0 ? allVersions[allVersions.length - 1] : null)
 
     const isExpired = currentPolicy?.expiresAt ? new Date(currentPolicy.expiresAt) <= new Date() : false
     const isActive = currentPolicy?.isValid && !isExpired
+    const categoryLabel = currentPolicy?.categoryLabel ?? "Brak"
 
-    const categoryLabel = useMemo(() => {
-        if (currentPolicy?.category == null) {
-            return "Brak"
-        }
-
-        const categoryValue = String(currentPolicy.category)
-        const matchedOption = (categoryOptionsData ?? []).find(
-            (option) => option.value === categoryValue || String(option.id) === categoryValue
-        )
-
-        return matchedOption?.label ?? categoryValue
-    }, [currentPolicy?.category, categoryOptionsData])
     if (isLoading) {
         return (
             <div className="flex h-[50vh] items-center justify-center">

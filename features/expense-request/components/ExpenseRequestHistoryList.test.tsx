@@ -11,6 +11,16 @@ vi.mock("@/features/auth/hooks/useAuth", () => ({
     }),
 }))
 
+vi.mock("@/features/categories/hooks/useCategories", () => ({
+    useCategories: () => ({
+        data: [
+            { id: 1, label: "Transport" },
+            { id: 2, label: "Wyżywienie" },
+        ],
+        isLoading: false,
+    }),
+}))
+
 vi.mock("../hooks/useExpenseRequests", () => ({
     useExpenseRequests: vi.fn(),
     useExpenseRequestDetails: vi.fn(),
@@ -68,7 +78,8 @@ describe("ExpenseRequestHistoryList", () => {
                     id: "exp-1",
                     userId: "user-1",
                     amount: 123,
-                    category: "Transport",
+                    categoryId: 1,
+                    categoryLabel: "Transport",
                     description: "Taxi",
                     expenseDate: "2026-03-20",
                     submittedAt: "2026-03-21T10:00:00Z",
@@ -77,7 +88,8 @@ describe("ExpenseRequestHistoryList", () => {
                     id: "exp-2",
                     userId: "user-1",
                     amount: 45,
-                    category: "Wyżywienie",
+                    categoryId: 2,
+                    categoryLabel: "Wyżywienie",
                     description: "Lunch",
                     expenseDate: "2026-03-22",
                     submittedAt: "2026-03-22T10:00:00Z",
@@ -95,14 +107,17 @@ describe("ExpenseRequestHistoryList", () => {
         expect(screen.queryByRole("button", { name: /lunch/i })).not.toBeInTheDocument()
     })
 
-    it("sortuje listę lokalnie według wybranego pola", () => {
-        const sorted = sortRequests(
-            [
+    it("filtruje listę po wybranej kategorii", async () => {
+        const user = userEvent.setup()
+
+        mockedUseExpenseRequests.mockReturnValue({
+            data: [
                 {
                     id: "exp-1",
                     userId: "user-1",
                     amount: 123,
-                    category: "Transport",
+                    categoryId: 1,
+                    categoryLabel: "Transport",
                     description: "Taxi",
                     expenseDate: "2026-03-20",
                     submittedAt: "2026-03-21T10:00:00Z",
@@ -111,7 +126,45 @@ describe("ExpenseRequestHistoryList", () => {
                     id: "exp-2",
                     userId: "user-1",
                     amount: 45,
-                    category: "Wyżywienie",
+                    categoryId: 2,
+                    categoryLabel: "Wyżywienie",
+                    description: "Lunch",
+                    expenseDate: "2026-03-22",
+                    submittedAt: "2026-03-22T10:00:00Z",
+                },
+            ],
+            isLoading: false,
+            isError: false,
+        } as ReturnType<typeof useExpenseRequests>)
+
+        render(<ExpenseRequestHistoryList />)
+
+        await user.click(screen.getByRole("combobox", { name: /kategoria/i }))
+        await user.click(await screen.findByRole("option", { name: "Transport" }))
+
+        expect(screen.getByRole("button", { name: /taxi/i })).toBeInTheDocument()
+        expect(screen.queryByRole("button", { name: /lunch/i })).not.toBeInTheDocument()
+    })
+
+    it("sortuje listę lokalnie według wybranego pola", () => {
+        const sorted = sortRequests(
+            [
+                {
+                    id: "exp-1",
+                    userId: "user-1",
+                    amount: 123,
+                    categoryId: 1,
+                    categoryLabel: "Transport",
+                    description: "Taxi",
+                    expenseDate: "2026-03-20",
+                    submittedAt: "2026-03-21T10:00:00Z",
+                },
+                {
+                    id: "exp-2",
+                    userId: "user-1",
+                    amount: 45,
+                    categoryId: 2,
+                    categoryLabel: "Wyżywienie",
                     description: "Lunch",
                     expenseDate: "2026-03-22",
                     submittedAt: "2026-03-22T10:00:00Z",
@@ -133,7 +186,8 @@ describe("ExpenseRequestHistoryList", () => {
                     id: "exp-1",
                     userId: "user-1",
                     amount: 123,
-                    category: "Transport",
+                    categoryId: 1,
+                    categoryLabel: "Transport",
                     description: "Taxi",
                     expenseDate: "2026-03-20",
                     submittedAt: "2026-03-21T10:00:00Z",
@@ -158,4 +212,3 @@ describe("ExpenseRequestHistoryList", () => {
         })
     })
 })
-

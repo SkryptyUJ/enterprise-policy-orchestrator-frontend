@@ -14,7 +14,7 @@ const mockPolicy = {
     name: "Polityka delegacji",
     description: "Opis polityki",
     categoryId: 1,
-    category: 1,
+    categoryLabel: "Sprzęt biurowy",
     authorizedRole: 2,
     minPrice: 100,
     maxPrice: 1000,
@@ -37,6 +37,10 @@ vi.mock("../hooks/usePolicies", () => ({
         isPending: false,
         isError: false,
         error: null,
+    }),
+    usePolicyCategories: () => ({
+        data: [{ id: 1, label: "Sprzęt biurowy" }],
+        isLoading: false,
     }),
 }))
 
@@ -68,8 +72,13 @@ describe("EditPolicyView", () => {
             expect(screen.getByDisplayValue("Polityka delegacji")).toBeInTheDocument()
         })
 
+        await user.click(screen.getByRole("combobox"))
+        await user.click(await screen.findByRole("option", { name: "Sprzęt biurowy" }))
+
         await user.click(screen.getByRole("button", { name: /zapisz zmiany/i }))
 
-        expect(mockPush).toHaveBeenCalledWith("/policy/42")
+        await waitFor(() => {
+            expect(mockPush).toHaveBeenCalledWith("/policy/42")
+        })
     })
 })

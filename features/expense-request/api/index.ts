@@ -5,7 +5,7 @@ type ApiClient = ReturnType<typeof createApiClient>
 
 export interface CreateExpenseRequestDto {
     amount: number
-    category: string
+    categoryId: number
     description: string
     expenseDate: string
 }
@@ -14,7 +14,8 @@ export interface ExpenseRequest {
     id: string
     userId: string
     amount: number
-    category: string
+    categoryId: number
+    categoryLabel: string
     description: string
     expenseDate: string
     submittedAt: string

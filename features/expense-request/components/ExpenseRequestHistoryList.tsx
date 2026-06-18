@@ -4,6 +4,7 @@ import { useMemo, useState } from "react"
 import { ArrowUpDown, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/features/auth/hooks/useAuth"
+import { useCategories } from "@/features/categories/hooks/useCategories"
 import {
 	Card,
 	CardContent,
@@ -30,7 +31,7 @@ import {
 } from "../hooks/useExpenseRequests"
 import { ExpenseRequestDetailsSheet } from "./ExpenseRequestDetailsSheet"
 
-type SortField = "expenseDate" | "submittedAt" | "amount" | "category"
+type SortField = "expenseDate" | "submittedAt" | "amount" | "categoryLabel"
 type SortOrder = "asc" | "desc"
 
 type SortOption = {
@@ -47,9 +48,11 @@ const SORT_OPTIONS: SortOption[] = [
 	{ value: "expenseDate-asc", label: "Data wydatku rosnąco", sortBy: "expenseDate", sortOrder: "asc" },
 	{ value: "amount-desc", label: "Kwota malejąco", sortBy: "amount", sortOrder: "desc" },
 	{ value: "amount-asc", label: "Kwota rosnąco", sortBy: "amount", sortOrder: "asc" },
-	{ value: "category-asc", label: "Kategoria A-Z", sortBy: "category", sortOrder: "asc" },
-	{ value: "category-desc", label: "Kategoria Z-A", sortBy: "category", sortOrder: "desc" },
+	{ value: "category-asc", label: "Kategoria A-Z", sortBy: "categoryLabel", sortOrder: "asc" },
+	{ value: "category-desc", label: "Kategoria Z-A", sortBy: "categoryLabel", sortOrder: "desc" },
 ]
+
+const ALL_CATEGORIES_VALUE = "all"
 
 function formatCurrency(value: number) {
 	return new Intl.NumberFormat("pl-PL", {
@@ -89,7 +92,7 @@ export function sortRequests(requests: ExpenseRequest[], sortBy: SortField, sort
 		} else if (sortBy === "expenseDate" || sortBy === "submittedAt") {
 			comparison = new Date(left[sortBy]).getTime() - new Date(right[sortBy]).getTime()
 		} else {
-			comparison = left.category.localeCompare(right.category, "pl")
+			comparison = left.categoryLabel.localeCompare(right.categoryLabel, "pl")
 		}
 
 		return sortOrder === "asc" ? comparison : -comparison
@@ -104,7 +107,7 @@ export function ExpenseRequestHistoryList() {
 		: "grid-cols-[1.4fr_1fr_1fr_0.9fr_0.8fr]"
 
 	const [search, setSearch] = useState("")
-	const [category, setCategory] = useState("")
+	const [categoryId, setCategoryId] = useState(ALL_CATEGORIES_VALUE)
 	const [fromDate, setFromDate] = useState("")
 	const [toDate, setToDate] = useState("")
 	const [minAmount, setMinAmount] = useState("")
@@ -118,6 +121,7 @@ export function ExpenseRequestHistoryList() {
 	)
 
 	const { data: requests, isLoading, isError } = useExpenseRequests()
+	const { data: categories, isLoading: isCategoriesLoading } = useCategories()
 	const { mutateAsync: approveRequest, isPending: isApproving } = useApproveExpenseRequest()
 	const { mutateAsync: declineRequest, isPending: isDeclining } = useDeclineExpenseRequest()
 	const {
@@ -128,7 +132,6 @@ export function ExpenseRequestHistoryList() {
 
 	const filteredRequests = useMemo(() => {
 		const normalizedSearch = search.trim().toLowerCase()
-		const normalizedCategory = category.trim().toLowerCase()
 		const minValue = minAmount ? Number(minAmount) : undefined
 		const maxValue = maxAmount ? Number(maxAmount) : undefined
 
@@ -136,8 +139,8 @@ export function ExpenseRequestHistoryList() {
 			const matchesSearch =
 				!normalizedSearch ||
 				request.description.toLowerCase().includes(normalizedSearch) ||
-				request.category.toLowerCase().includes(normalizedSearch)
-		const matchesCategory = !normalizedCategory || request.category.toLowerCase().includes(normalizedCategory)
+				request.categoryLabel.toLowerCase().includes(normalizedSearch)
+		const matchesCategory = categoryId === ALL_CATEGORIES_VALUE || String(request.categoryId) === categoryId
 		const matchesFromDate = !fromDate || request.expenseDate >= fromDate
 		const matchesToDate = !toDate || request.expenseDate <= toDate
 		const matchesMinAmount = typeof minValue !== "number" || Number.isNaN(minValue) ? true : request.amount >= minValue
@@ -154,11 +157,11 @@ export function ExpenseRequestHistoryList() {
 		})
 
 		return sortRequests(filtered, selectedSort.sortBy, selectedSort.sortOrder)
-	}, [requests, search, category, fromDate, toDate, minAmount, maxAmount, selectedSort])
+	}, [requests, search, categoryId, fromDate, toDate, minAmount, maxAmount, selectedSort])
 
 	function clearFilters() {
 		setSearch("")
-		setCategory("")
+		setCategoryId(ALL_CATEGORIES_VALUE)
 		setFromDate("")
 		setToDate("")
 		setMinAmount("")
@@ -212,12 +215,19 @@ export function ExpenseRequestHistoryList() {
 
 						<div className="space-y-2">
 							<Label htmlFor="category">Kategoria</Label>
-							<Input
-								id="category"
-								value={category}
-								onChange={(event) => setCategory(event.target.value)}
-								placeholder="Np. Podróż służbowa"
-							/>
+							<Select value={categoryId} onValueChange={setCategoryId}>
+								<SelectTrigger id="category" disabled={isCategoriesLoading}>
+									<SelectValue placeholder={isCategoriesLoading ? "Ładowanie..." : "Wybierz kategorię"} />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value={ALL_CATEGORIES_VALUE}>Wszystkie kategorie</SelectItem>
+									{(categories ?? []).map((category) => (
+										<SelectItem key={category.id} value={String(category.id)}>
+											{category.label}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
 						</div>
 
 						<div className="space-y-2">
@@ -320,7 +330,7 @@ export function ExpenseRequestHistoryList() {
 								>
 									<span className="line-clamp-2">{request.description}</span>
 									{canReview && <span className="font-mono text-xs sm:text-sm">{request.userId}</span>}
-									<span>{request.category}</span>
+									<span>{request.categoryLabel}</span>
 									<span>{formatDate(request.expenseDate)}</span>
 									<span className="font-medium">{formatCurrency(request.amount)}</span>
 									<span>
@@ -354,4 +364,3 @@ export function ExpenseRequestHistoryList() {
 		</>
 	)
 }
-

@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useForm, type Resolver } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label"
 import { InputField, SelectField, TextareaField } from "@/components/shared"
 import { createPolicySchema, type CreatePolicyFormValues } from "../schemas/createPolicy.schema"
 import { useCreatePolicy, usePolicyCategories } from "../hooks/usePolicies"
-import { useUser } from "@auth0/nextjs-auth0"
+import type { Policy } from "../api"
 
 function toLocalDatetimeString(date: Date): string {
     const pad = (n: number) => String(n).padStart(2, "0")
@@ -37,6 +37,10 @@ const POLICY_FEATURES = [
     },
 ]
 
+export function getCreatedPolicyHistoryPath(policy: Pick<Policy, "id">) {
+    return `/policy/${policy.id}?history=true`
+}
+
 export function CreatePolicyView() {
     const router = useRouter()
     const { mutate: createPolicy, isPending, isError, error } = useCreatePolicy()
@@ -53,27 +57,10 @@ export function CreatePolicyView() {
         () =>
             (categoryOptionsData ?? []).map((option) => ({
                 label: option.label,
-                value: option.value,
+                value: String(option.id),
             })),
         [categoryOptionsData]
     )
-
-    const selectedCategoryId = form.watch("categoryId")
-
-    useEffect(() => {
-        if (selectedCategoryId === undefined || selectedCategoryId === null) {
-            return
-        }
-
-        const nextCategory = Number(selectedCategoryId)
-        if (Number.isNaN(nextCategory)) {
-            return
-        }
-
-        if (form.getValues("category") !== nextCategory) {
-            form.setValue("category", nextCategory as never, { shouldValidate: true })
-        }
-    }, [selectedCategoryId, form])
 
     function handleApplyNowChange(checked: boolean) {
         setApplyNow(checked)
@@ -86,7 +73,7 @@ export function CreatePolicyView() {
 
     function onSubmit(values: CreatePolicyFormValues) {
         createPolicy(values, {
-            onSuccess: () => router.push("/policy/all"),
+            onSuccess: (createdPolicy) => router.push(getCreatedPolicyHistoryPath(createdPolicy)),
         })
     }
 
@@ -132,8 +119,6 @@ export function CreatePolicyView() {
 
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit as never)} className="space-y-6">
-                            <input type="hidden" {...form.register("category")} />
-
                             <InputField<CreatePolicyFormValues>
                                 name="name"
                                 label="Nazwa polityki"

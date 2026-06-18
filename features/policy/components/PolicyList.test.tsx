@@ -8,6 +8,7 @@ const mockActivePolicies = [
     {
         id: 1,
         name: "Polityka podróży",
+        categoryLabel: "Podróże",
         active: true,
         startsAt: "2026-01-01T00:00:00Z",
         expiresAt: null,
@@ -17,6 +18,7 @@ const mockActivePolicies = [
     {
         id: 2,
         name: "Polityka szkoleniowa",
+        categoryLabel: "Szkolenia",
         active: false,
         startsAt: "2025-01-01T00:00:00Z",
         expiresAt: "2025-06-01T00:00:00Z",
@@ -33,9 +35,13 @@ vi.mock("../hooks/usePolicies", () => ({
 
 function createWrapper() {
     const queryClient = new QueryClient()
-    return ({ children }: { children: ReactNode }) => (
-        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-    )
+    function TestQueryClientProvider({ children }: { children: ReactNode }) {
+        return (
+            <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+        )
+    }
+
+    return TestQueryClientProvider
 }
 
 describe("PolicyList", () => {

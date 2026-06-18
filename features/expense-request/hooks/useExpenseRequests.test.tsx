@@ -36,9 +36,13 @@ function createWrapper() {
 		defaultOptions: { queries: { retry: false } },
 	})
 
-	return ({ children }: { children: ReactNode }) => (
-		<QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-	)
+	function TestQueryClientProvider({ children }: { children: ReactNode }) {
+		return (
+			<QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+		)
+	}
+
+	return TestQueryClientProvider
 }
 
 describe("useExpenseRequests", () => {
@@ -139,4 +143,3 @@ describe("useExpenseRequests", () => {
 		)
 	})
 })
-

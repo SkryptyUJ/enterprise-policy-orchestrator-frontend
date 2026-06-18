@@ -37,13 +37,13 @@ export function ExpenseRequestForm() {
     const { data: categoryOptionsData, isLoading: isCategoryOptionsLoading } = usePolicyCategories()
 
     const categoryOptions = useMemo(
-        () => (categoryOptionsData ?? []).map((option) => ({ label: option.label, value: option.value })),
+        () => (categoryOptionsData ?? []).map((option) => ({ label: option.label, value: String(option.id) })),
         [categoryOptionsData]
     )
 
     const [form, setForm] = useState({
         amount: "",
-        category: "",
+        categoryId: "",
         description: "",
         expenseDate: getTodayString(),
     })
@@ -53,7 +53,7 @@ export function ExpenseRequestForm() {
     }
 
     function handleCategoryChange(value: string) {
-        setForm((prev) => ({ ...prev, category: value }))
+        setForm((prev) => ({ ...prev, categoryId: value }))
     }
 
     function handleSubmit(e: React.FormEvent) {
@@ -65,17 +65,23 @@ export function ExpenseRequestForm() {
             return
         }
 
+        const categoryId = Number(form.categoryId)
+        if (!Number.isInteger(categoryId)) {
+            toast.error("Wybierz kategorię")
+            return
+        }
+
         mutate(
             {
                 amount,
-                category: form.category,
+                categoryId,
                 description: form.description,
-                expenseDate: form.expenseDate,
+                expenseDate: `${form.expenseDate}T00:00:00`,
             },
             {
                 onSuccess: () => {
                     toast.success("Wniosek został złożony pomyślnie")
-                    router.push("/dashboard")
+                    router.push("/expense-request/history")
                 },
                 onError: (error) => {
                     if (error instanceof ApiError && error.status === 400) {
@@ -150,7 +156,7 @@ export function ExpenseRequestForm() {
                             Kategoria
                         </Label>
                         <Select
-                            value={form.category}
+                            value={form.categoryId}
                             onValueChange={handleCategoryChange}
                             required
                         >

@@ -84,17 +84,19 @@ function DetailRow({ label, value }: { label: string; value: string }) {
     )
 }
 
-export function ExpenseRequestDetailsSheet({
+function ExpenseDecisionActions({
     open,
-    onOpenChange,
-    details,
-    isLoading,
-    isError,
-    canApprove,
+    detailsId,
     onApprove,
     onDecline,
     isApproving,
-}: ExpenseRequestDetailsSheetProps) {
+}: {
+    open: boolean
+    detailsId?: number
+    onApprove: (decisionRationale: string) => Promise<void>
+    onDecline: (decisionRationale: string) => Promise<void>
+    isApproving: boolean
+}) {
     const [decisionRationale, setDecisionRationale] = useState("")
     const [decisionError, setDecisionError] = useState<string | null>(null)
 
@@ -102,10 +104,7 @@ export function ExpenseRequestDetailsSheet({
         if (!open) return
         setDecisionRationale("")
         setDecisionError(null)
-    }, [open, details?.id])
-
-    const canApproveRequest =
-        canApprove && ["WAITING_FOR_APPROVAL", "REQUIRES_ESCALATION"].includes(details?.status?.toUpperCase() ?? "")
+    }, [open, detailsId])
 
     async function handleApproveClick() {
         const trimmedRationale = decisionRationale.trim()
@@ -142,6 +141,48 @@ export function ExpenseRequestDetailsSheet({
     }
 
     return (
+        <div className="space-y-3 py-2 text-sm">
+            <p className="font-medium">Zatwierdź wniosek</p>
+            <div className="space-y-2">
+                <p className="text-muted-foreground">Uzasadnienie decyzji</p>
+                <Textarea
+                    value={decisionRationale}
+                    onChange={(event) => setDecisionRationale(event.target.value)}
+                    placeholder="Podaj uzasadnienie decyzji dla użytkownika..."
+                    rows={4}
+                    disabled={isApproving}
+                />
+            </div>
+            {decisionError && (
+                <p className="text-sm text-destructive">{decisionError}</p>
+            )}
+            <div className="flex justify-end gap-2">
+                <Button variant="destructive" onClick={handleDeclineClick} disabled={isApproving}>
+                    {isApproving ? "Przetwarzanie..." : "Odrzuć wniosek"}
+                </Button>
+                <Button onClick={handleApproveClick} disabled={isApproving}>
+                    {isApproving ? "Zatwierdzanie..." : "Zatwierdź wniosek"}
+                </Button>
+            </div>
+        </div>
+    )
+}
+
+export function ExpenseRequestDetailsSheet({
+    open,
+    onOpenChange,
+    details,
+    isLoading,
+    isError,
+    canApprove,
+    onApprove,
+    onDecline,
+    isApproving,
+}: ExpenseRequestDetailsSheetProps) {
+    const canApproveRequest =
+        canApprove && ["WAITING_FOR_APPROVAL", "REQUIRES_ESCALATION"].includes(details?.status?.toUpperCase() ?? "")
+
+    return (
         <Sheet open={open} onOpenChange={onOpenChange}>
             <SheetContent className="sm:max-w-xl">
                 <SheetHeader>
@@ -172,7 +213,7 @@ export function ExpenseRequestDetailsSheet({
                             <DetailRow label="ID" value={String(details.id)} />
                             <DetailRow label="Status" value={getStatusLabel(details.status)} />
                             <DetailRow label="Kwota" value={formatCurrency(details.amount)} />
-                            <DetailRow label="Kategoria" value={details.category} />
+                            <DetailRow label="Kategoria" value={details.categoryLabel} />
                             <DetailRow label="Data wydatku" value={formatDate(details.expenseDate)} />
                             <DetailRow label="Złożono" value={formatDateTime(details.submittedAt)} />
                             <Separator className="my-2" />
@@ -210,30 +251,14 @@ export function ExpenseRequestDetailsSheet({
                             {canApproveRequest && (
                                 <>
                                     <Separator className="my-2" />
-                                    <div className="space-y-3 py-2 text-sm">
-                                        <p className="font-medium">Zatwierdź wniosek</p>
-                                        <div className="space-y-2">
-                                            <p className="text-muted-foreground">Uzasadnienie decyzji</p>
-                                            <Textarea
-                                                value={decisionRationale}
-                                                onChange={(event) => setDecisionRationale(event.target.value)}
-                                                placeholder="Podaj uzasadnienie decyzji dla użytkownika..."
-                                                rows={4}
-                                                disabled={isApproving}
-                                            />
-                                        </div>
-                                        {decisionError && (
-                                            <p className="text-sm text-destructive">{decisionError}</p>
-                                        )}
-                                        <div className="flex justify-end gap-2">
-                                            <Button variant="destructive" onClick={handleDeclineClick} disabled={isApproving}>
-                                                {isApproving ? "Przetwarzanie..." : "Odrzuć wniosek"}
-                                            </Button>
-                                            <Button onClick={handleApproveClick} disabled={isApproving}>
-                                                {isApproving ? "Zatwierdzanie..." : "Zatwierdź wniosek"}
-                                            </Button>
-                                        </div>
-                                    </div>
+                                    <ExpenseDecisionActions
+                                        key={details.id}
+                                        open={open}
+                                        detailsId={details.id}
+                                        onApprove={onApprove}
+                                        onDecline={onDecline}
+                                        isApproving={isApproving}
+                                    />
                                 </>
                             )}
 
@@ -251,4 +276,3 @@ export function ExpenseRequestDetailsSheet({
         </Sheet>
     )
 }
-

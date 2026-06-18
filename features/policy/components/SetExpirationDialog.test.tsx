@@ -20,9 +20,13 @@ vi.mock("sonner", () => ({
 
 function createWrapper() {
     const queryClient = new QueryClient()
-    return ({ children }: { children: ReactNode }) => (
-        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-    )
+    function TestQueryClientProvider({ children }: { children: ReactNode }) {
+        return (
+            <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+        )
+    }
+
+    return TestQueryClientProvider
 }
 
 describe("SetExpirationDialog", () => {
