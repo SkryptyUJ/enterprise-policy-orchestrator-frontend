@@ -14,13 +14,6 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import type { ExpenseRequestDetails } from "../api"
-import type { Policy } from "@/features/policy/api"
-
-function formatPolicy(policy: Policy | null | undefined) {
-    if (!policy) return "-"
-    const version = policy.version != null ? ` (wersja ${policy.version})` : ""
-    return `${policy.name}${version}`
-}
 
 function getDecisionVariant(status: string | undefined) {
     const normalized = status?.toUpperCase()
@@ -40,7 +33,7 @@ function getStatusLabel(status: string | null | undefined) {
     return status ?? "Brak"
 }
 
-function formatConflictingPolicies(policyNames: string[] | null | undefined) {
+function formatApplicablePolicies(policyNames: string[] | undefined) {
     if (!policyNames || policyNames.length === 0) return "-"
     return policyNames.join(", ")
 }
@@ -92,7 +85,7 @@ function ExpenseDecisionActions({
     isApproving,
 }: {
     open: boolean
-    detailsId?: number
+    detailsId?: string
     onApprove: (decisionRationale: string) => Promise<void>
     onDecline: (decisionRationale: string) => Promise<void>
     isApproving: boolean
@@ -225,12 +218,8 @@ export function ExpenseRequestDetailsSheet({
                                     <span className="text-muted-foreground">{getStatusLabel(details.status)}</span>
                                 </div>
                                 <DetailRow
-                                    label="Zastosowana polityka"
-                                    value={formatPolicy(details.appliedPolicy)}
-                                />
-                                <DetailRow
-                                    label="Konflikt polityk"
-                                    value={formatConflictingPolicies(details.conflictingPolicyNames)}
+                                    label="Zastosowane polityki"
+                                    value={formatApplicablePolicies(details.applicablePolicies)}
                                 />
                                 <DetailRow
                                     label="Decyzję podjął"
