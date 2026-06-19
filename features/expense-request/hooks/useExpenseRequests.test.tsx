@@ -113,12 +113,13 @@ describe("useExpenseRequests", () => {
 			await result.current.mutateAsync({
 				expenseRequestId: "exp-1",
 				decisionRationale: "Zgodne z polityką",
+				appliedPolicy: "Polityka podróży",
 			})
 		})
 
 		expect(mockPatch).toHaveBeenCalledWith(
 			"/api/expense-requests/review/exp-1/approve",
-			{ decisionRationale: "Zgodne z polityką" }
+			{ decisionRationale: "Zgodne z polityką", appliedPolicy: "Polityka podróży" }
 		)
 	})
 

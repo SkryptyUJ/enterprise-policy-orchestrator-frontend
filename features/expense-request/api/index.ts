@@ -20,6 +20,7 @@ export interface ExpenseRequest {
     submittedAt: string
     status?: string
     applicablePolicies: string[]
+    appliedPolicy?: string | null
     decisionRationale?: string | null
     decidedBy?: string | null
     decidedAt?: string | null
@@ -29,6 +30,7 @@ export type ExpenseRequestDetails = ExpenseRequest
 
 export interface ApproveExpenseRequestDto {
     decisionRationale: string
+    appliedPolicy?: string | null
 }
 
 const API_BASE = "/api"

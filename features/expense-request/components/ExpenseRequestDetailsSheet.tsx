@@ -13,6 +13,13 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 import type { ExpenseRequestDetails } from "../api"
 
 function getDecisionVariant(status: string | undefined) {
@@ -45,7 +52,7 @@ type ExpenseRequestDetailsSheetProps = {
     isLoading: boolean
     isError: boolean
     canApprove: boolean
-    onApprove: (decisionRationale: string) => Promise<void>
+    onApprove: (decisionRationale: string, appliedPolicy: string | null) => Promise<void>
     onDecline: (decisionRationale: string) => Promise<void>
     isApproving: boolean
 }
@@ -80,24 +87,30 @@ function DetailRow({ label, value }: { label: string; value: string }) {
 function ExpenseDecisionActions({
     open,
     detailsId,
+    applicablePolicies,
     onApprove,
     onDecline,
     isApproving,
 }: {
     open: boolean
     detailsId?: string
-    onApprove: (decisionRationale: string) => Promise<void>
+    applicablePolicies: string[]
+    onApprove: (decisionRationale: string, appliedPolicy: string | null) => Promise<void>
     onDecline: (decisionRationale: string) => Promise<void>
     isApproving: boolean
 }) {
     const [decisionRationale, setDecisionRationale] = useState("")
+    const [appliedPolicy, setAppliedPolicy] = useState<string>("")
     const [decisionError, setDecisionError] = useState<string | null>(null)
 
     useEffect(() => {
         if (!open) return
         setDecisionRationale("")
+        setAppliedPolicy("")
         setDecisionError(null)
     }, [open, detailsId])
+
+    const hasApplicablePolicies = applicablePolicies.length > 0
 
     async function handleApproveClick() {
         const trimmedRationale = decisionRationale.trim()
@@ -107,10 +120,16 @@ function ExpenseDecisionActions({
             return
         }
 
+        if (hasApplicablePolicies && !appliedPolicy) {
+            setDecisionError("Wybierz politykę, którą stosujesz.")
+            return
+        }
+
         try {
             setDecisionError(null)
-            await onApprove(trimmedRationale)
+            await onApprove(trimmedRationale, appliedPolicy || null)
             setDecisionRationale("")
+            setAppliedPolicy("")
         } catch {
             setDecisionError("Nie udało się zatwierdzić wniosku. Spróbuj ponownie.")
         }
@@ -136,6 +155,27 @@ function ExpenseDecisionActions({
     return (
         <div className="space-y-3 py-2 text-sm">
             <p className="font-medium">Zatwierdź wniosek</p>
+            {hasApplicablePolicies && (
+                <div className="space-y-2">
+                    <p className="text-muted-foreground">Wybrana polityka</p>
+                    <Select
+                        value={appliedPolicy}
+                        onValueChange={setAppliedPolicy}
+                        disabled={isApproving}
+                    >
+                        <SelectTrigger>
+                            <SelectValue placeholder="Wybierz politykę..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {applicablePolicies.map((name) => (
+                                <SelectItem key={name} value={name}>
+                                    {name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+            )}
             <div className="space-y-2">
                 <p className="text-muted-foreground">Uzasadnienie decyzji</p>
                 <Textarea
@@ -222,6 +262,10 @@ export function ExpenseRequestDetailsSheet({
                                     value={formatApplicablePolicies(details.applicablePolicies)}
                                 />
                                 <DetailRow
+                                    label="Wybrana polityka"
+                                    value={details.appliedPolicy ?? "-"}
+                                />
+                                <DetailRow
                                     label="Decyzję podjął"
                                     value={details.decidedBy ?? "-"}
                                 />
@@ -244,6 +288,7 @@ export function ExpenseRequestDetailsSheet({
                                         key={details.id}
                                         open={open}
                                         detailsId={details.id}
+                                        applicablePolicies={details.applicablePolicies}
                                         onApprove={onApprove}
                                         onDecline={onDecline}
                                         isApproving={isApproving}

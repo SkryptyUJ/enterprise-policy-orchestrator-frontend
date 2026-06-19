@@ -75,7 +75,15 @@ export function useApproveExpenseRequest() {
     const { user } = useAuth()
 
     return useMutation({
-        mutationFn: ({ expenseRequestId, decisionRationale }: { expenseRequestId: string; decisionRationale: string }) => {
+        mutationFn: ({
+            expenseRequestId,
+            decisionRationale,
+            appliedPolicy,
+        }: {
+            expenseRequestId: string
+            decisionRationale: string
+            appliedPolicy: string | null
+        }) => {
             if (!user) throw new Error("Brak zalogowanego użytkownika")
 
             const mode = resolveListMode(user)
@@ -83,7 +91,7 @@ export function useApproveExpenseRequest() {
                 throw new Error("Brak uprawnień do zatwierdzania wniosków")
             }
 
-            return approveExpenseRequest(client, expenseRequestId, { decisionRationale })
+            return approveExpenseRequest(client, expenseRequestId, { decisionRationale, appliedPolicy })
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: expenseRequestKeys.all })
