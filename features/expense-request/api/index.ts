@@ -1,5 +1,4 @@
 import type { createApiClient } from "@/lib/apiClient"
-import type { Policy } from "@/features/policy/api"
 
 type ApiClient = ReturnType<typeof createApiClient>
 
@@ -20,8 +19,8 @@ export interface ExpenseRequest {
     expenseDate: string
     submittedAt: string
     status?: string
-    appliedPolicy?: Policy | null
-    conflictingPolicyNames?: string[] | null
+    applicablePolicies: string[]
+    appliedPolicy?: string | null
     decisionRationale?: string | null
     decidedBy?: string | null
     decidedAt?: string | null
@@ -31,6 +30,7 @@ export type ExpenseRequestDetails = ExpenseRequest
 
 export interface ApproveExpenseRequestDto {
     decisionRationale: string
+    appliedPolicy?: string | null
 }
 
 const API_BASE = "/api"

@@ -169,9 +169,9 @@ export function ExpenseRequestHistoryList() {
 		setSortValue("submittedAt-desc")
 	}
 
-	async function handleApprove(decisionRationale: string) {
+	async function handleApprove(decisionRationale: string, appliedPolicy: string | null) {
 		if (!selectedExpenseId) return
-		await approveRequest({ expenseRequestId: selectedExpenseId, decisionRationale })
+		await approveRequest({ expenseRequestId: selectedExpenseId, decisionRationale, appliedPolicy })
 	}
 
 	async function handleDecline(decisionRationale: string) {

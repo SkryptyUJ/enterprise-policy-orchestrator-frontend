@@ -62,7 +62,7 @@ describe("ExpenseRequestHistoryList", () => {
             data: [],
             isLoading: false,
             isError: false,
-        } as ReturnType<typeof useExpenseRequests>)
+        } as unknown as ReturnType<typeof useExpenseRequests>)
 
         render(<ExpenseRequestHistoryList />)
 
@@ -158,6 +158,7 @@ describe("ExpenseRequestHistoryList", () => {
                     description: "Taxi",
                     expenseDate: "2026-03-20",
                     submittedAt: "2026-03-21T10:00:00Z",
+                    applicablePolicies: [],
                 },
                 {
                     id: "exp-2",
@@ -168,6 +169,7 @@ describe("ExpenseRequestHistoryList", () => {
                     description: "Lunch",
                     expenseDate: "2026-03-22",
                     submittedAt: "2026-03-22T10:00:00Z",
+                    applicablePolicies: [],
                 },
             ],
             "amount",
